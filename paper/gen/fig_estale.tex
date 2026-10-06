@@ -1,0 +1,24 @@
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=2 by 1, horizontal sep=1.25cm},
+  width=4.6cm, height=3.7cm, grid=major, grid style={gray!20},
+  tick label style={font=\scriptsize}, label style={font=\scriptsize}, ylabel shift=-2pt,
+  title style={font=\scriptsize, yshift=-1ex}, every axis plot/.append style={},
+  legend style={font=\scriptsize, draw=none, column sep=6pt}, cycle list name=exotic]
+\nextgroupplot[title={(a)}, xlabel={Sync period $H$ (s)}, ylabel={C-SLO, soft}, xmode=log, log basis x=10, legend columns=2, legend to name=leg:estale]
+\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.4556) +- (0,0.172) (0.25,0.4529) +- (0,0.15) (0.5,0.4845) +- (0,0.169) (1,0.5184) +- (0,0.132) (2,0.5469) +- (0,0.097)};
+\addlegendentry{TF (trust filter)}
+\addplot+[color=cEW, mark=triangle*, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.3598) +- (0,0.117) (0.25,0.3624) +- (0,0.113) (0.5,0.3998) +- (0,0.107) (1,0.4542) +- (0,0.101) (2,0.4679) +- (0,0.0826)};
+\addlegendentry{TF+EW (energy wt.)}
+\addplot+[color=cEC, mark=star, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.4685) +- (0,0.0871) (0.25,0.4521) +- (0,0.103) (0.5,0.4498) +- (0,0.0961) (1,0.5077) +- (0,0.0941) (2,0.521) +- (0,0.0955)};
+\addlegendentry{TF+EC (energy cap.)}
+\nextgroupplot[title={(b)}, xlabel={Sync period $H$ (s)}, ylabel={C-SLO, outage}, xmode=log, log basis x=10]
+\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.6162) +- (0,0.0278) (0.25,0.596) +- (0,0.0311) (0.5,0.5895) +- (0,0.0335) (1,0.5676) +- (0,0.048) (2,0.5405) +- (0,0.0418)};
+\addlegendentry{TF (trust filter)}
+\addplot+[color=cEW, mark=triangle*, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.2287) +- (0,0.0527) (0.25,0.2587) +- (0,0.0715) (0.5,0.2886) +- (0,0.0589) (1,0.3343) +- (0,0.0502) (2,0.3709) +- (0,0.0556)};
+\addlegendentry{TF+EW (energy wt.)}
+\addplot+[color=cEC, mark=star, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.1736) +- (0,0.0462) (0.25,0.1771) +- (0,0.0491) (0.5,0.2096) +- (0,0.0569) (1,0.285) +- (0,0.0602) (2,0.358) +- (0,0.0417)};
+\addlegendentry{TF+EC (energy cap.)}
+\legend{}
+\end{groupplot}
+\node at ($(group c1r1.north west)!0.5!(group c2r1.north east)+(0,0.75cm)$) {\pgfplotslegendfromname{leg:estale}};
+\end{tikzpicture}

@@ -1,0 +1,24 @@
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=2 by 1, horizontal sep=1.25cm},
+  width=4.6cm, height=3.7cm, grid=major, grid style={gray!20},
+  tick label style={font=\scriptsize}, label style={font=\scriptsize}, ylabel shift=-2pt,
+  title style={font=\scriptsize, yshift=-1ex}, every axis plot/.append style={},
+  legend style={font=\scriptsize, draw=none, column sep=6pt}, cycle list name=exotic]
+\nextgroupplot[title={(a)}, xlabel={Edge servers $N$}, ylabel={Compliant SLO}, legend columns=3, legend to name=leg:scale]
+\addplot+[color=cRR, mark=triangle*, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(10,0.6175) +- (0,0.168) (30,0.5805) +- (0,0.0537) (60,0.6011) +- (0,0.0624) (120,0.569) +- (0,0.0299)};
+\addlegendentry{Round-robin}
+\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(10,0.8227) +- (0,0.136) (30,0.8545) +- (0,0.0592) (60,0.908) +- (0,0.0472) (120,0.8826) +- (0,0.029)};
+\addlegendentry{TF (trust filter)}
+\addplot+[color=cTRACE, mark=diamond*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(10,0.8539) +- (0,0.0755) (30,0.8557) +- (0,0.119) (60,0.935) +- (0,0.0365) (120,0.9326) +- (0,0.0093)};
+\addlegendentry{\textsc{Trace}}
+\nextgroupplot[title={(b)}, xlabel={Edge servers $N$}, ylabel={Time ($\mu$s/request)}]
+\addplot+[color=cRR, mark=triangle*, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(10,1.383) +- (0,0.501) (30,1.551) +- (0,0.145) (60,1.349) +- (0,0.188) (120,1.181) +- (0,0.0824)};
+\addlegendentry{Round-robin}
+\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(10,17.99) +- (0,4.09) (30,29.67) +- (0,4.23) (60,35.57) +- (0,2.8) (120,51.88) +- (0,5.02)};
+\addlegendentry{TF (trust filter)}
+\addplot+[color=cTRACE, mark=diamond*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(10,20.1) +- (0,5.04) (30,32.76) +- (0,7.87) (60,37.03) +- (0,3.16) (120,51.15) +- (0,5.12)};
+\addlegendentry{\textsc{Trace}}
+\legend{}
+\end{groupplot}
+\node at ($(group c1r1.north west)!0.5!(group c2r1.north east)+(0,0.75cm)$) {\pgfplotslegendfromname{leg:scale}};
+\end{tikzpicture}

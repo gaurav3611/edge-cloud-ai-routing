@@ -1,0 +1,50 @@
+\begin{tikzpicture}[
+  font=\footnotesize, >=Stealth,
+  srv/.style={draw, rounded corners=2pt, minimum width=1.55cm, minimum height=0.9cm, align=center, line width=0.6pt},
+  dev/.style={draw, rounded corners=1pt, minimum width=0.6cm, minimum height=0.4cm, fill=gray!10},
+  stp/.style={draw, rounded corners=2pt, text width=5.6cm, minimum height=0.7cm, align=left, inner sep=4pt, line width=0.6pt},
+  dec/.style={draw, diamond, aspect=3.2, inner sep=0.5pt, align=center, fill=white, line width=0.6pt, font=\scriptsize},
+  lab/.style={font=\scriptsize\itshape, text=black!75}]
+% ---------------- left: topology ----------------
+\node[draw, rounded corners=6pt, fill=gray!8, minimum width=6.0cm, minimum height=0.85cm, align=center] (cloud) at (3.3,5.0)
+  {\textbf{Cloud tier}: periodic service placement (EPARA)};
+\node[srv, fill=cA!22] (s1) at (0.0,3.0) {$S_1$\\$c{=}2,\ d{=}A$};
+\node[srv, fill=cB!28] (s2) at (2.2,3.0) {$S_2$\\$c{=}0,\ d{=}B$};
+\node[srv, fill=cA!22] (s3) at (4.4,3.0) {$S_3$\\$c{=}1,\ d{=}A$};
+\node[srv, fill=cC!25] (s4) at (6.6,3.0) {$S_4$\\$c{=}2,\ d{=}C$};
+\foreach \s in {s1,s2,s3,s4} \draw[gray!55] (cloud.south) -- (\s.north);
+\foreach \a/\b in {s1/s2, s2/s3, s3/s4} \draw[<->, dashed, gray] (\a.east) -- (\b.west);
+\node[lab] at (3.3,3.85) {edge tier: ring state sync every $H$ (dashed)};
+% offloads
+\draw[->, very thick, cTRACE] (s3.south) to[bend right=35] node[pos=0.5, below=1pt, lab, text=cTRACE!80!black] {allowed ($c_4{\ge}s_r$)} (s4.south);
+\draw[->, very thick, cEB] (s1.south) to[bend right=35] node[pos=0.5, below=1pt, lab, text=cEB] {blocked ($c_2{<}s_r$)} (s2.south);
+\node[cEB, font=\Large\bfseries] at (1.1,2.18) {$\times$};
+% devices
+\node[dev] (d1) at (-0.45,0.55) {};
+\node[dev] (d2) at (0.45,0.55) {};
+\node[dev] (d3) at (3.95,0.55) {};
+\node[dev] (d4) at (4.85,0.55) {};
+\draw[->, line width=0.6pt] (d1.north) -- node[left, lab] {$s_r{=}0$} (s1.south west);
+\draw[->, line width=0.6pt] (d2.north) -- node[right, lab, pos=0.35] {$s_r{=}2$} (s1.south);
+\draw[->, line width=0.6pt] (d3.north) -- node[left, lab] {$s_r{=}1$} (s3.south west);
+\draw[->, line width=0.6pt] (d4.north) -- (s3.south east);
+\node[lab, align=center] at (2.2,0.0) {end devices (cameras, phones, robots)};
+\node[lab, align=center] at (3.3,-0.55) {fill colour = trust domain $d$;\quad $c$ = clearance;\quad $s_r$ = request sensitivity};
+% ---------------- right: per-request decision path ----------------
+\begin{scope}[xshift=9.6cm]
+\node[stp, fill=gray!8] (p1) at (2.9,5.45) {\textbf{1. Arrival} at server $i$: service $l_r$, category (LS/FS $\times$ $<$1/$>$1 GPU), sensitivity $s_r$};
+\node[stp, fill=gray!8] (p2) at (2.9,4.25) {\textbf{2. EPARA operator layer} (unchanged): BS, MT, MP, MF, DP $\Rightarrow$ $m_l$ slots for $\tau_l$};
+\node[dec] (p3) at (2.9,2.85) {$\mathrm{elig}(r,i)$, online and\\SLO feasible at $i$?};
+\node[stp, text width=1.2cm, fill=cTRACE!18, align=center] (srv) at (6.9,2.85) {\textbf{serve}\\at $i$};
+\node[stp, fill=cTF!14] (p4) at (2.9,1.45) {\textbf{3. Trust filter}: keep peers $j\notin V$ with\\ $c_j\ge s_r$ and ($s_r{<}2$ or $d_j{=}d_{o_r}$)};
+\node[stp, fill=cTRACE!14] (p5) at (2.9,0.2) {\textbf{4. Weight} (capacity, proximity, best-fit):\\[2pt]\centering $w_{ij}=\phi(\hat\sigma_{ij},m)\cdot\frac{1}{1+\ell_{ij}/\ell_0}\cdot\gamma^{\,c_j-s_r}$};
+\node[stp, fill=gray!8] (p6) at (2.9,-1.0) {\textbf{5. Sample} $j\propto w_{ij}$, debit $\hat\sigma_{ij}$, forward ($\le K_{\max}$ times)};
+\draw[->] (p1) -- (p2);
+\draw[->] (p2) -- (p3);
+\draw[->] (p3) -- node[above, lab] {yes} (srv);
+\draw[->] (p3.south) -- node[right, lab] {no} (p4.north);
+\draw[->] (p4) -- (p5);
+\draw[->] (p5) -- (p6);
+\draw[->] (p6.west) -- ++(-0.45,0) |- node[lab, pos=0.22, left] {at peer $j$} (p3.west);
+\end{scope}
+\end{tikzpicture}

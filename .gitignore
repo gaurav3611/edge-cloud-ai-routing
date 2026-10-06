@@ -1,0 +1,13 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+# logs and build outputs
+*.log
+paper_overleaf.zip
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.out
+paper/*.synctex.gz
+.DS_Store

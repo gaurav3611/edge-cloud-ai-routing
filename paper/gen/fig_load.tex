@@ -1,0 +1,56 @@
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=4 by 1, horizontal sep=1.25cm},
+  width=4.6cm, height=3.7cm, grid=major, grid style={gray!20},
+  tick label style={font=\scriptsize}, label style={font=\scriptsize}, ylabel shift=-2pt,
+  title style={font=\scriptsize, yshift=-1ex}, every axis plot/.append style={},
+  legend style={font=\scriptsize, draw=none, column sep=6pt}, cycle list name=exotic]
+\nextgroupplot[title={(a)}, xlabel={Offered load $\rho$}, ylabel={C-goodput (req/s)}, legend columns=5, legend to name=leg:load]
+\addplot+[color=cLOC, mark=o, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,417.4) +- (0,75.4) (0.6,432.2) +- (0,79.7) (0.8,406.9) +- (0,57.2) (0.9,393.5) +- (0,73.9) (1,374.4) +- (0,64.9)};
+\addlegendentry{Local only}
+\addplot+[color=cRR, mark=triangle*, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,799.6) +- (0,45.4) (0.6,1127) +- (0,72.1) (0.8,1078) +- (0,98.9) (0.9,756.4) +- (0,168) (1,557.1) +- (0,108)};
+\addlegendentry{Round-robin}
+\addplot+[color=cEPARA, mark=*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,807.1) +- (0,40.8) (0.6,1191) +- (0,62.6) (0.8,1391) +- (0,187) (0.9,782.6) +- (0,256) (1,469.7) +- (0,134)};
+\addlegendentry{EPARA-style}
+\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,967.2) +- (0,51.5) (0.6,1413) +- (0,83.5) (0.8,1648) +- (0,115) (0.9,1035) +- (0,289) (1,710.3) +- (0,136)};
+\addlegendentry{TF (trust filter)}
+\addplot+[color=cTRACE, mark=diamond*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,968.1) +- (0,51.7) (0.6,1420) +- (0,84) (0.8,1698) +- (0,135) (0.9,1047) +- (0,279) (1,673.2) +- (0,176)};
+\addlegendentry{\textsc{Trace}}
+\nextgroupplot[title={(b)}, xlabel={Offered load $\rho$}, ylabel={C-SLO (per request)}]
+\addplot+[color=cLOC, mark=o, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.4216) +- (0,0.0602) (0.6,0.2914) +- (0,0.043) (0.8,0.2065) +- (0,0.0226) (0.9,0.177) +- (0,0.0272) (1,0.1517) +- (0,0.0209)};
+\addlegendentry{Local only}
+\addplot+[color=cRR, mark=triangle*, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.8147) +- (0,0.0172) (0.6,0.7666) +- (0,0.021) (0.8,0.5501) +- (0,0.047) (0.9,0.3404) +- (0,0.0667) (1,0.2263) +- (0,0.0378)};
+\addlegendentry{Round-robin}
+\addplot+[color=cEPARA, mark=*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.8229) +- (0,0.0158) (0.6,0.8103) +- (0,0.0158) (0.8,0.7075) +- (0,0.0822) (0.9,0.349) +- (0,0.102) (1,0.1897) +- (0,0.0491)};
+\addlegendentry{EPARA-style}
+\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.9857) +- (0,0.0128) (0.6,0.9606) +- (0,0.0157) (0.8,0.8407) +- (0,0.0456) (0.9,0.4647) +- (0,0.12) (1,0.2894) +- (0,0.0526)};
+\addlegendentry{TF (trust filter)}
+\addplot+[color=cTRACE, mark=diamond*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.9866) +- (0,0.0129) (0.6,0.9653) +- (0,0.0153) (0.8,0.8667) +- (0,0.0602) (0.9,0.4691) +- (0,0.114) (1,0.2735) +- (0,0.0667)};
+\addlegendentry{\textsc{Trace}}
+\legend{}
+\nextgroupplot[title={(c)}, xlabel={Offered load $\rho$}, ylabel={C-SLO (balanced)}]
+\addplot+[color=cLOC, mark=o, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.4097) +- (0,0.0577) (0.6,0.2964) +- (0,0.048) (0.8,0.2107) +- (0,0.0223) (0.9,0.1851) +- (0,0.0329) (1,0.1509) +- (0,0.0244)};
+\addlegendentry{Local only}
+\addplot+[color=cRR, mark=triangle*, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.7795) +- (0,0.0385) (0.6,0.7535) +- (0,0.0302) (0.8,0.5614) +- (0,0.037) (0.9,0.3925) +- (0,0.0677) (1,0.2801) +- (0,0.0313)};
+\addlegendentry{Round-robin}
+\addplot+[color=cEPARA, mark=*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.8131) +- (0,0.035) (0.6,0.8137) +- (0,0.025) (0.8,0.6937) +- (0,0.0559) (0.9,0.4183) +- (0,0.0893) (1,0.2753) +- (0,0.0391)};
+\addlegendentry{EPARA-style}
+\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.9779) +- (0,0.0161) (0.6,0.9574) +- (0,0.0213) (0.8,0.8116) +- (0,0.0487) (0.9,0.5447) +- (0,0.101) (1,0.3961) +- (0,0.0553)};
+\addlegendentry{TF (trust filter)}
+\addplot+[color=cTRACE, mark=diamond*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.9849) +- (0,0.015) (0.6,0.9649) +- (0,0.0172) (0.8,0.8411) +- (0,0.0427) (0.9,0.5493) +- (0,0.0937) (1,0.3894) +- (0,0.0625)};
+\addlegendentry{\textsc{Trace}}
+\legend{}
+\nextgroupplot[title={(d)}, xlabel={Offered load $\rho$}, ylabel={Violation rate}]
+\addplot+[color=cLOC, mark=o, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.1656) +- (0,0.0183) (0.6,0.1657) +- (0,0.0183) (0.8,0.1658) +- (0,0.019) (0.9,0.1658) +- (0,0.0188) (1,0.1653) +- (0,0.0185)};
+\addlegendentry{Local only}
+\addplot+[color=cRR, mark=triangle*, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.1788) +- (0,0.0159) (0.6,0.1912) +- (0,0.0187) (0.8,0.1953) +- (0,0.0131) (0.9,0.2014) +- (0,0.0136) (1,0.204) +- (0,0.0141)};
+\addlegendentry{Round-robin}
+\addplot+[color=cEPARA, mark=*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.1768) +- (0,0.0158) (0.6,0.1878) +- (0,0.0161) (0.8,0.2005) +- (0,0.0158) (0.9,0.1999) +- (0,0.0198) (1,0.1958) +- (0,0.0184)};
+\addlegendentry{EPARA-style}
+\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0) +- (0,0) (0.6,0) +- (0,0) (0.8,0) +- (0,0) (0.9,0) +- (0,0) (1,0) +- (0,0)};
+\addlegendentry{TF (trust filter)}
+\addplot+[color=cTRACE, mark=diamond*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0) +- (0,0) (0.6,0) +- (0,0) (0.8,0) +- (0,0) (0.9,0) +- (0,0) (1,0) +- (0,0)};
+\addlegendentry{\textsc{Trace}}
+\legend{}
+\end{groupplot}
+\node at ($(group c1r1.north west)!0.5!(group c4r1.north east)+(0,0.75cm)$) {\pgfplotslegendfromname{leg:load}};
+\end{tikzpicture}
