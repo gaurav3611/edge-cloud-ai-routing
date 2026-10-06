@@ -201,7 +201,7 @@ TF+EW (with retention) was the design advocated in our original proposal; ``EW o
 % =====================================================================
 \section{Evaluation Methodology}\label{sec:method}
 
-\textbf{Simulator.} We built an event-driven simulator in Python/NumPy. It executes the full routing logic for every request but abstracts computation and transmission by service-time and latency tables---the methodology EPARA uses for its large-scale study~\cite{epara2025}. All parameters (Table~\ref{tab:params}) are \emph{assumptions} modeled on EPARA's P100 testbed scale. They are not measurements, and absolute numbers should not be compared with EPARA's. Code and data availability are described at the end of this article.
+\textbf{Simulator.} We built an event-driven simulator in Python/NumPy. It executes the full routing logic for every request but abstracts computation and transmission by service-time and latency tables---the methodology EPARA uses for its large-scale study~\cite{epara2025}. All parameters (Table~\ref{tab:params}) are \emph{assumptions} modeled on EPARA's P100 testbed scale. They are not measurements, and absolute numbers should not be compared with EPARA's. The simulator, experiment scripts and raw results are publicly available at \url{https://github.com/gaurav3611/edge-cloud-ai-routing}.
 
 \begin{table}[t]
 \centering\caption{Simulation parameters (defaults).}\label{tab:params}
@@ -419,7 +419,7 @@ The next steps are to replace the assumed service and power profiles with measur
 
 % =====================================================================
 \section*{Data and Code Availability}
-The simulator (\texttt{ecsim.py}), the experiment suite (\texttt{experiments\_v2.py}), the analysis scripts and the raw per-run results (1,740 runs) that produce every number, figure and table in this article will be made available by the authors [repository link to be added].
+The simulator (\texttt{ecsim.py}), the experiment suite (\texttt{experiments\_v2.py}), the analysis scripts and the raw per-run results (1,740 runs) that produce every number, figure and table in this article are publicly available at \url{https://github.com/gaurav3611/edge-cloud-ai-routing}. The repository's README lists the steps to reproduce all results (about 30 minutes on an 8-core laptop).
 
 \section*{Acknowledgment}
 [To be added by the authors.]
