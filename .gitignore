@@ -11,3 +11,13 @@ paper/*.blg
 paper/*.out
 paper/*.synctex.gz
 .DS_Store
+# Word build intermediates (paper/main.docx is the deliverable)
+paper/docx_build/pg-*.png
+paper/docx_build/sheet*.png
+paper/docx_build/*.pdf
+paper/docx_build/draft.docx
+paper/docx_build/final.docx
+paper/docx_build/ref_default.docx
+paper/docx_build/refx/
+paper/docx_build/auxrun/
+paper/docx_build/fig_*.tex
