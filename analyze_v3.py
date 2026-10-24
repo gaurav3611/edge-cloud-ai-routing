@@ -238,9 +238,13 @@ if len(K):
     fam.done()
     fig, ax = plt.subplots(1, 2, figsize=(4.6, 2.1))
     line(ax[0], K, "corr", "viol", ["local", "epara", "oracle_u"], "origin–sensitivity alignment λ")
-    ax[0].set_title("(a) violation rate (trust-oblivious)"); ax[0].legend()
+    ax[0].set_title("(a) violation rate (trust-oblivious)")
     line(ax[1], K, "corr", "cslo", ["epara", "oracle_u", "tf", "trace", "oracle_c"], "origin–sensitivity alignment λ")
-    ax[1].set_title("(b) compliant SLO attainment"); ax[1].legend(fontsize=6)
+    ax[1].set_title("(b) compliant SLO attainment")
+    h, l = ax[0].get_legend_handles_labels(); h2, l2 = ax[1].get_legend_handles_labels()
+    for hh, ll in zip(h2, l2):
+        if ll not in l: h.append(hh); l.append(ll)
+    fig.legend(h, l, loc="lower center", ncol=3, frameon=False, bbox_to_anchor=(0.5, -0.2))
     fig.tight_layout(); fig.savefig("figures_v3/fig_corr.png", bbox_inches="tight"); plt.close(fig)
 
 # ======================= O: overload =======================
@@ -287,7 +291,8 @@ if len(E):
     for i, rho in enumerate([0.8, 1.0]):
         line(ax[i], E[E.rho == rho], "hsync", "cslo", ["epara", "tf_jsq", "tf_p2c", "tf", "trace"], "sync period H (s)")
         ax[i].set_xscale("log"); ax[i].set_title(f"({'ab'[i]}) ρ={rho}")
-    ax[1].legend(fontsize=6)
+    h, l = ax[0].get_legend_handles_labels()
+    fig.legend(h, l, loc="lower center", ncol=5, frameon=False, bbox_to_anchor=(0.5, -0.1))
     fig.tight_layout(); fig.savefig("figures_v3/fig_stale.png", bbox_inches="tight"); plt.close(fig)
     fam = Family("E_stale")
     for rho in [0.8, 1.0]:
