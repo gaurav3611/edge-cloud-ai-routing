@@ -4,7 +4,7 @@
 
 **Edge-cloud collaborative intelligence.** A recent survey [@liu2025eccc] organizes ECCC research into model optimization, AI-driven resource management and privacy/security enhancement, and names heterogeneity management and real-time scheduling as open challenges. Model partitioning between device and cloud [@neurosurgeon] and collaborative edge LLM inference [@edgeshard] address *where to compute a model*; we address *where a request may be served*.
 
-**Multilevel security and data sovereignty.** Eq. (1) is a two-attribute instance of multilevel-security labelling. The Bell–LaPadula model [@bell1973] assigns subjects and objects levels from an ordered set and forbids a subject from reading data above its clearance; Denning's lattice model [@denning1976] generalizes this to a lattice of security classes along which information may flow only upward. Our clearance levels form such an ordered set, and the trust-domain condition for the highest sensitivity adds a compartment, so the eligible destinations of a request are exactly the servers whose (clearance, domain) label dominates the request's label. Data-sovereignty work [@hummel2021] and regulation such as the GDPR [@gdpr] motivate the domain compartment: some data may be processed only under the control of a particular organization or jurisdiction. We do not contribute to the theory of these models; we use their simplest form as a hard constraint inside a fast decentralized router and measure what it costs.
+**Multilevel security and data sovereignty.** Eq. (2) is a two-attribute instance of multilevel-security labelling. The Bell–LaPadula model [@bell1973] assigns subjects and objects levels from an ordered set and forbids a subject from reading data above its clearance; Denning's lattice model [@denning1976] generalizes this to a lattice of security classes along which information may flow only upward. Our clearance levels form such an ordered set, and the trust-domain condition for the highest sensitivity adds a compartment, so the eligible destinations of a request are exactly the servers whose (clearance, domain) label dominates the request's label. Data-sovereignty work [@hummel2021] and regulation such as the GDPR [@gdpr] motivate the domain compartment: some data may be processed only under the control of a particular organization or jurisdiction. We do not contribute to the theory of these models; we use their simplest form as a hard constraint inside a fast decentralized router and measure what it costs.
 
 **Security- and privacy-aware fog and edge scheduling.** The closest prior work classifies tasks by privacy level and restricts where they may run. Singh et al. [@singh2021fog] divide fog applications into public, semi-private and private classes that must be hosted on untrusted, semi-trusted and trusted resources, respectively, and place interactive and batch tasks with a distributed orchestrator that weighs performance against security requirements. PASHE [@fizza2018pashe] schedules private, semi-private and public real-time jobs across edge micro data centers and the cloud, executing private jobs with tight deadlines on the user's local micro data center. Our clearance levels and sensitivities follow the same idea. The differences are in the setting and the questions asked: we route individual requests of categorized GPU inference services, decentralized and in microseconds, from periodically synchronized state; we add a domain compartment for the most sensitive data; and we quantify the cost of compliance against unconstrained and centralized references rather than proposing a placement heuristic. Learning-based privacy-aware offloading [@min2019privacy] protects information leaked *by the act of offloading*, and federated learning [@mcmahan2017fl] keeps training data local. We address a different point in the design space: per-request, decentralized routing of categorized inference with microsecond decisions and periodically synchronized state, and we compare against the decentralized and centralized references a practitioner would consider (round-robin, power-of-two choices, join-the-shortest-queue, static pools and a centralized dispatcher with perfect information).
 
@@ -51,6 +51,27 @@ $$V_\mathrm{loc}=\sum_{c} \Pr[c_{o}=c]\,\Pr[s_r>c]\qquad\qquad(4)$$
 (no domain violation is possible at the ingress server). With clearances 0/1/2 w.p. 0.3/0.4/0.3 and sensitivities w.p. 0.60/0.24/0.16, $V_\mathrm{loc}=0.3\cdot0.40+0.4\cdot0.16=18.4\%$; a destination drawn uniformly at random gives $0.24\cdot0.3+0.16\cdot(1-0.3/3)=21.6\%$. We report the simulated violation rates of trust-oblivious routers only as a check of these numbers, not as a finding. Because real sensitive data tends to originate at high-clearance sites, we also let a fraction $\lambda$ of requests originate only at servers whose clearance covers their sensitivity; then $V_\mathrm{loc}$ falls to $(1-\lambda)V_\mathrm{loc}$, but offloaded requests can still violate (Section VI-C).
 
 
+TABLE I. Notation.
+
+| Symbol | Meaning |
+|---|---|
+| $\mathcal N$, $N$ | set and number of edge servers |
+| $S_j$ | GPU slots (MPS partitions) of server $j$ |
+| $c_j$, $d_j$ | clearance level and trust domain of server $j$ |
+| $\ell_{ij}$; $S_\mathrm{cl}$, $\ell_\mathrm{cl}$ | latency between $i$ and $j$; cloud slots and latency |
+| $P_s$, $\kappa_j$, $\bar P_j$ | slot power, supply fraction, mean supply |
+| $E_j(t)$, $B_j$; $\Phi$ | energy buffer level and capacity; supply ratio, Eq. (1) |
+| $o_r$, $a_r$, $l_r$, $s_r$ | ingress server, arrival time, service and sensitivity of $r$ |
+| $m_l$, $\tau_l$, $\mathrm{SLO}_l$ | slots, service time and SLO of service $l$ |
+| $\mathrm{elig}(r,j)$ | trust eligibility, Eq. (2) |
+| $y_r$, $v_r$ | SLO met; trust violation |
+| $\lambda$ | share of requests whose ingress clearance covers their sensitivity |
+| $\hat\sigma_{ij}$, $\hat h_{ij}$ | $i$'s view of $j$'s spare slots and energy headroom |
+| $H$, $\Delta$ | state-sync period; capacity horizon |
+| $w_{ij}(r)$ | offload weight, Eq. (5) |
+| $\gamma$, $q^\ast$, $\hat q_i$ | best-fit strength, enabling threshold, local sensitive-share estimate |
+| $K_{\max}$ | maximum forwards per request |
+
 # IV. Design of TRACE
 
 Fig. 1 summarizes the design. TRACE replaces EPARA's request handler; category profiles and service placement are taken as given. Each server $i$ keeps a view of every peer $j$: spare slots $\hat\sigma_{ij}$ over a horizon $\Delta=0.5$ s and the peer's online status, both taken from the last ring synchronization and debited locally by $i$'s own offloads since then.
@@ -86,7 +107,33 @@ To test whether the offload score should account for energy headroom $\hat h_{ij
 
 **Simulator.** We extended our event-driven simulator (Python/NumPy). It executes the full routing logic for every request but abstracts computation and transmission by service-time and latency tables, the methodology EPARA uses for its large-scale study [@epara2025]. EPARA's operators are not modelled: each category has a fixed slot count and service time after operator selection, so batching gains and co-location interference are not captured. Unless stated otherwise every server hosts every service (full replication); Section VI-F also evaluates partial placement. All parameters (Table II) are *assumptions* modelled on EPARA's P100 testbed scale; they are not measurements, and absolute numbers should not be compared with EPARA's. The simulator, experiment scripts and raw results are available at https://github.com/gaurav3611/edge-cloud-ai-routing.
 
-**Separating trust from energy.** In the first version of this study, every experiment used energy-capped servers with a mean supply below the offered load, so energy scarcity confounded the trust results. In this version, the trust experiments (Section VI) run with unconstrained energy, and energy is studied separately and explicitly in Section VII, where we control the supply ratio $\Phi$ of Eq. (1).
+**Separating trust from energy.** When servers are energy-capped below the offered load, energy scarcity lowers every router's SLO attainment and masks the effect of the trust constraint. The trust experiments (Section VI) therefore run with unconstrained energy, and energy is studied on its own in Section VII, where the supply ratio $\Phi$ of Eq. (1) is controlled explicitly.
+
+TABLE II. Simulation parameters (defaults; ranges studied in parentheses).
+
+| Parameter | Value |
+|---|---|
+| Servers $N$ | 30 (10–120) |
+| GPUs per server; slots | 2 or 4 (uniform); 4 slots per GPU |
+| Clearance $c_j$ | 0/1/2 w.p. 0.30/0.40/0.30 (also 0.5/0.3/0.2 and 0.2/0.4/0.4) |
+| Trust domains | 3, uniform (1, 2, 5) |
+| Network latency | 2 ms + 20 ms × distance (unit square) |
+| Sensitivity mix $s_r$ | 0/1/2 w.p. 0.60/0.24/0.16 (sensitive share 0–80%, split 3:2) |
+| Origin–sensitivity alignment $\lambda$ | 0 (0, 0.5, 1) |
+| LS<1 (classification) | 1 slot, 30 ms, SLO 150 ms, 20% of demand |
+| LS>1 (LLM chat) | 8 slots, 800 ms, SLO 3 s, 30% |
+| FS<1 (video detection) | 2 slots, stream 5–15 s, start SLO 200 ms, 30% |
+| FS>1 (video segmentation) | 8 slots, stream 5–10 s, start SLO 300 ms, 20% |
+| Arrivals | Poisson; log-normal ingress hot spots; ±80% sinusoidal bursts, period 20 s |
+| Sync period $H$; horizon $\Delta$ | 1 s (0.1–2 s); 0.5 s (0.1–1 s) |
+| $K_{\max}$; $\ell_0$; fit factor | 2 (1–4); 20 ms (5–80 ms); 0.05 (0–1) |
+| Best-fit $\gamma$; threshold $q^\ast$ | 0.3; 30% (tuned on separate seeds) |
+| Cloud tier (Sec. VI-F) | 96 slots, 40 ms one-way, clearance 1, no domain |
+| Slot power $P_s$ | 60 W (250 W GPU / 4) |
+| Supply fraction $\kappa_j$ | 0.45/0.70/1.0 w.p. 0.35/0.35/0.30, rescaled to the target $\Phi$ |
+| Supply profile | constant, or solar: period 120 s, amplitude 1, three phases |
+| Buffer $B_j$; initial charge | 120 s of mean supply (20 s, 600 s); uniform 20–100% |
+| Run length; seeds | trust: 60 s (10 s warm-up), 30 seeds; energy: 180 s (60 s warm-up), 10 seeds |
 
 **Load.** Offered load $\rho$ is the demanded slot-seconds per second divided by the total number of slots. Shares of demand are measured in slot-seconds; by request count, classification requests are about 99% of all requests, which is why we report the category-balanced metric.
 
