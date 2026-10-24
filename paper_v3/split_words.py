@@ -55,6 +55,12 @@ for k in range(len(chunks)-1):
             chunks[k].append(chunks[k+1].pop(0))
         else:
             break
+# the last part can grow during the fit pass: split it again if needed
+while words(render(chunks[-1])) > N:
+    tail = []
+    while words(render(chunks[-1])) > N:
+        tail.insert(0, chunks[-1].pop())
+    chunks.append(tail)
 os.makedirs(out, exist_ok=True)
 for k, c in enumerate(chunks, start):
     md = render(c); fn = os.path.join(out, f"{prefix}_{k:02d}")
