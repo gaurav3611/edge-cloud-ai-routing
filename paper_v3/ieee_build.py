@@ -4,7 +4,8 @@ environments, pipe tables become table floats, images become figure floats, cita
 import re, subprocess, os, shutil
 
 SRC = "build/final.md"
-OUT = "build/ieee"
+MODE = os.environ.get("MODE", "ieee")
+OUT = "build/ieee" if MODE == "ieee" else "build/tplpdf"
 os.makedirs(OUT + "/figures", exist_ok=True)
 
 
@@ -58,7 +59,7 @@ while i < len(blocks):
             continue
         if h.startswith("Appendix"):
             if not in_app:
-                out.append("\\appendices"); in_app = True
+                out.append("\\appendices" if MODE == "ieee" else "\\appendixmode"); in_app = True
             h = re.sub(r"^Appendix [A-Z]:\s*", "", h)
             out.append(f"\\section{{{inline(h)}}}")
         elif h in ("Data and Code Availability", "Acknowledgment"):
@@ -96,6 +97,8 @@ while i < len(blocks):
         wide = w > 5
         env = "figure*" if wide else "figure"
         width = "\\textwidth" if wide else "\\columnwidth"
+        if MODE != "ieee":
+            env, width = "figure", ("\\textwidth" if wide else "0.72\\textwidth")
         nfig += 1
         out.append(f"\\begin{{{env}}}[!t]\n\\centering\n\\includegraphics[width={width}]{{figures/{name}}}\n"
                    f"\\caption{{{inline(cap)}}}\n\\label{{fig:{nfig}}}\n\\end{{{env}}}")
@@ -109,6 +112,8 @@ while i < len(blocks):
         wide = ncol >= 6 or sum(len(c) for c in cells[0]) > 70 or any(len(" ".join(r)) > 90 for r in cells)
         env = "table*" if wide else "table"
         width = "\\textwidth" if wide else "\\columnwidth"
+        if MODE != "ieee":
+            env, width = "table", "\\textwidth"
         tex_rows = []
         for k, r in enumerate(cells):
             r = (r + [""] * ncol)[:ncol]
@@ -165,10 +170,23 @@ authors = r"""\author{Nithish~Kumar, Ganesh~Khekare$^{*}$, and Gaurav~Nitesh~Gan
 {\normalsize School of Computer Science and Engineering, Vellore Institute of Technology, Vellore, Tamil Nadu, India}\\
 {\normalsize nithishkumar.r2023@vitstudent.ac.in, ganesh.khekare@vit.ac.in$^{*}$, gauravnitehs.gandhi2023@vitstudent.ac.in}\\
 {\normalsize $^{*}$Corresponding author}}"""
-tex = (pre + f"\\title{{{inline(title)}}}\n" + authors + "\n\\maketitle\n\n" +
-       "\\begin{abstract}\n" + inline(abstract) + "\n\\end{abstract}\n\n" +
-       "\\begin{IEEEkeywords}\n" + inline(keywords) + "\n\\end{IEEEkeywords}\n\n" +
-       "\n\n".join(out) + "\n\n\\end{document}\n")
+if MODE == "ieee":
+    tex = (pre + f"\\title{{{inline(title)}}}\n" + authors + "\n\\maketitle\n\n" +
+           "\\begin{abstract}\n" + inline(abstract) + "\n\\end{abstract}\n\n" +
+           "\\begin{IEEEkeywords}\n" + inline(keywords) + "\n\\end{IEEEkeywords}\n\n" +
+           "\n\n".join(out) + "\n\n\\end{document}\n")
+else:
+    pre_t = open("tpl_preamble.tex").read()
+    em = ["nithishkumar.r2023@vitstudent.ac.in", "ganesh.khekare@vit.ac.in", "gauravnitehs.gandhi2023@vitstudent.ac.in"]
+    links = ", ".join("\\mail{" + e + "}" + ("$^{*}$" if "khekare" in e else "") for e in em)
+    front = ("\\begin{center}\n{\\fontsize{20}{24}\\selectfont\\bfseries " + inline(title) + "\\par}\\vspace{8pt}\n"
+             "{\\fontsize{14}{17}\\selectfont Nithish Kumar, Ganesh Khekare$^{*}$, and Gaurav Nitesh Gandhi\\par\\vspace{4pt}\n"
+             "School of Computer Science and Engineering, Vellore Institute of Technology, Vellore, Tamil Nadu, India\\par\\vspace{4pt}\n"
+             + links + "\\par}\n\\end{center}\n\n"
+             "{\\fontsize{10}{12}\\selectfont\\bfseries\\itshape Abstract\\par}\\vspace{3pt}\n"
+             "{\\fontsize{10}{12}\\selectfont\\bfseries " + inline(abstract) + "\\par}\\vspace{8pt}\n\n"
+             "\\textbf{\\textit{Index Terms}}---" + inline(keywords) + ".\n\n")
+    tex = pre_t + "\\begin{document}\n\\thispagestyle{empty}\n" + front + "\n\n".join(out) + "\n\n\\end{document}\n"
 open(f"{OUT}/main.tex", "w").write(tex)
 shutil.copy("../paper/refs.bib", f"{OUT}/refs.bib")
 print("wrote", f"{OUT}/main.tex", len(tex), "chars;", nfig, "figures")

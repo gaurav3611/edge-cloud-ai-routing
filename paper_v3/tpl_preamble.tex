@@ -1,0 +1,65 @@
+% Single-column layout reproducing the authors' Word template:
+% Letter paper, 1 in margins, Times; 20 pt bold title, 14 pt author block, bold 10 pt abstract,
+% 11 pt justified body without indent, small-caps centred section headings (I., II., ...),
+% italic subsection headings (A., B., ...), 9 pt captions ("Fig. 1." / "TABLE I."), 9 pt references.
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{mathptmx}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{adjustbox}
+\usepackage{cite}
+\usepackage{url}
+\usepackage{textcomp}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage[font=footnotesize,labelsep=period]{caption}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{µ}{\ensuremath{\mu}}
+\newunicodechar{±}{\ensuremath{\pm}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{Φ}{\ensuremath{\Phi}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{ρ}{\ensuremath{\rho}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{Δ}{\ensuremath{\Delta}}
+\newunicodechar{ℓ}{\ensuremath{\ell}}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{​}{}
+\definecolor{lnk}{HTML}{156082}
+\newcommand{\mail}[1]{\href{mailto:#1}{\textcolor{lnk}{\underline{#1}}}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\linespread{1.0}
+\pagestyle{empty}
+\setlist{itemsep=2pt,topsep=2pt}
+\renewcommand{\thesection}{\Roman{section}}
+\renewcommand{\thesubsection}{\Alph{subsection}}
+\titleformat{\section}{\centering\fontsize{12}{14}\selectfont\scshape}{\thesection.}{0.4em}{}
+\titleformat{\subsection}{\normalsize\itshape}{\thesubsection.}{0.4em}{}
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+\titlespacing*{\subsection}{0pt}{10pt}{4pt}
+\newcommand{\appendixmode}{\setcounter{section}{0}\renewcommand{\thesection}{\Alph{section}}%
+  \titleformat{\section}{\centering\fontsize{12}{14}\selectfont\scshape}{Appendix \thesection:}{0.4em}{}}
+\renewcommand{\thetable}{\Roman{table}}
+\captionsetup[table]{name=TABLE,justification=centering,skip=4pt}
+\captionsetup[figure]{name=Fig.,justification=justified,singlelinecheck=false}
+\makeatletter
+\renewenvironment{thebibliography}[1]
+  {\section*{References}\footnotesize
+   \list{\@biblabel{\@arabic\c@enumiv}}{\settowidth\labelwidth{\@biblabel{#1}}\leftmargin\labelwidth
+   \advance\leftmargin\labelsep\itemsep 2pt\parsep 0pt\usecounter{enumiv}\let\p@enumiv\@empty
+   \renewcommand\theenumiv{\@arabic\c@enumiv}}\sloppy\clubpenalty4000\widowpenalty4000\sfcode`\.\@m}
+  {\def\@noitemerr{\@latex@warning{Empty `thebibliography' environment}}\endlist}
+\makeatother
+\def\UrlBreaks{\do\/\do-\do.}
+\hyphenation{EPARA TRACE}
+\providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
