@@ -161,8 +161,10 @@ pre = r"""\documentclass[journal]{IEEEtran}
 \hyphenation{EPARA TRACE}
 \begin{document}
 """
-authors = r"""\author{Nithish~Kumar, Ganesh~Khekare$^{*}$, and Gaurav~Nitesh~Gandhi%
-\thanks{The authors are with the School of Computer Science and Engineering, Vellore Institute of Technology, Vellore, Tamil Nadu, India (e-mail: nithishkumar.r2023@vitstudent.ac.in; ganesh.khekare@vit.ac.in; gauravnitehs.gandhi2023@vitstudent.ac.in). $^{*}$Corresponding author: Ganesh Khekare.}}"""
+authors = r"""\author{Nithish~Kumar, Ganesh~Khekare$^{*}$, and Gaurav~Nitesh~Gandhi\\[4pt]
+{\normalsize School of Computer Science and Engineering, Vellore Institute of Technology, Vellore, Tamil Nadu, India}\\
+{\normalsize nithishkumar.r2023@vitstudent.ac.in, ganesh.khekare@vit.ac.in$^{*}$, gauravnitehs.gandhi2023@vitstudent.ac.in}\\
+{\normalsize $^{*}$Corresponding author}}"""
 tex = (pre + f"\\title{{{inline(title)}}}\n" + authors + "\n\\maketitle\n\n" +
        "\\begin{abstract}\n" + inline(abstract) + "\n\\end{abstract}\n\n" +
        "\\begin{IEEEkeywords}\n" + inline(keywords) + "\n\\end{IEEEkeywords}\n\n" +
