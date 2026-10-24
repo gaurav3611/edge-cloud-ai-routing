@@ -114,7 +114,7 @@ if len(A):
             continue
         rows.append([NAMES[p], fmt(*ci(s.slo)), fmt(*ci(s.cslo)), fmt(*ci(s.bcslo)), fmt(*ci(s.viol)),
                      f"{ci(s.cgoodput)[0]:.0f}±{ci(s.cgoodput)[1]:.0f}", f"{s.hops.mean():.2f}",
-                     f"{s.drop.mean():.3f}", f"{s.dec_us.mean():.1f}"])
+                     f"{s["drop"].mean():.3f}", f"{s.dec_us.mean():.1f}"])
     table_md("tab_main", ["Policy", "SLO", "C-SLO", "C-SLO_bal", "Viol.", "C-goodput", "Fwd.", "Shed", "µs/dec."], rows)
     for rho in sorted(A.rho.unique()):
         s = A[A.rho == rho]
@@ -223,14 +223,14 @@ if len(C):
 # ======================= K: correlation =======================
 K = d[d.exp == "K_corr"]
 if len(K):
-    for lam in sorted(K.corr.unique()):
+    for lam in sorted(K["corr"].unique()):
         for p in K.pol.unique():
-            q = K[(K.corr == lam) & (K.pol == p)]
+            q = K[(K["corr"] == lam) & (K.pol == p)]
             NUM[f"K|{lam}|{p}"] = {k: ci(q[k])[0] for k in ["slo", "cslo", "viol"]}
             NUM[f"K|{lam}|{p}|ci"] = {k: ci(q[k])[1] for k in ["slo", "cslo", "viol"]}
     fam = Family("K_corr")
-    for lam in sorted(K.corr.unique()):
-        P = piv(K[K.corr == lam], "cslo"); Pr = piv(K[K.corr == lam], "slo")
+    for lam in sorted(K["corr"].unique()):
+        P = piv(K[K["corr"] == lam], "cslo"); Pr = piv(K[K["corr"] == lam], "slo")
         fam.add(f"TRACE - EPARA compliant @lambda={lam}", P["trace"], P["epara"])
         fam.add(f"EPARA raw - TRACE @lambda={lam}", Pr["epara"], P["trace"])
         fam.add(f"oracle_c - TRACE @lambda={lam}", P["oracle_c"], P["trace"])
