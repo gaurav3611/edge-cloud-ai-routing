@@ -21,3 +21,7 @@ paper/docx_build/ref_default.docx
 paper/docx_build/refx/
 paper/docx_build/auxrun/
 paper/docx_build/fig_*.tex
+# paper_v3 build outputs: regenerate with build_ieee.sh / build_tplpdf.sh / template_docx.py;
+# the finished files are copied to paper/main.tex, paper/main.pdf, paper/main.docx,
+# paper/main_template.pdf, which are the tracked deliverables.
+paper_v3/build/

@@ -1,931 +1,563 @@
 \documentclass[journal]{IEEEtran}
-% =====================================================================
-%  TRACE: Trust-Constrained, Category-Aware Request Routing for
-%  AI Inference in Edge-Cloud Collaborative Systems
-%  Complete, self-contained manuscript: all figures are drawn with TikZ/pgfplots
-%  from embedded data, and the references are embedded. Upload this single file
-%  to Overleaf (compiler: pdfLaTeX) and compile; no other files are needed.
-% =====================================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{graphicx}
 \usepackage{booktabs}
-\usepackage{multirow}
-\usepackage{algorithm}
-\usepackage{algpseudocode}
-\usepackage{xcolor}
+\usepackage{adjustbox}
 \usepackage{cite}
-\usepackage{tikz}
-\usepackage{pgfplots}
-\pgfplotsset{compat=1.18}
-\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric,shapes.symbols}
-\usepgfplotslibrary{groupplots}
-\usepackage[hidelinks]{hyperref}
-% colour-blind-safe series palette (fixed policy -> colour mapping in every figure)
-\definecolor{cEPARA}{HTML}{2A78D6}
-\definecolor{cTF}{HTML}{EB6834}
-\definecolor{cTRACE}{HTML}{1BAF7A}
-\definecolor{cEW}{HTML}{EDA100}
-\definecolor{cRR}{HTML}{E87BA4}
-\definecolor{cEWO}{HTML}{4A3AA7}
-\definecolor{cEB}{HTML}{E34948}
-\definecolor{cEC}{HTML}{008300}
-\definecolor{cLOC}{HTML}{8A8984}
-\definecolor{cA}{HTML}{2A78D6}
-\definecolor{cB}{HTML}{EDA100}
-\definecolor{cC}{HTML}{1BAF7A}
-\newcommand{\sys}{\textsc{Trace}}
-
+\usepackage{url}
+\usepackage{textcomp}
+\usepackage{newunicodechar}
+\newunicodechar{µ}{\ensuremath{\mu}}
+\newunicodechar{±}{\ensuremath{\pm}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{Φ}{\ensuremath{\Phi}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{ρ}{\ensuremath{\rho}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{Δ}{\ensuremath{\Delta}}
+\newunicodechar{ℓ}{\ensuremath{\ell}}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{​}{}
+\providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\def\UrlBreaks{\do\/\do-\do.}
+\hyphenation{EPARA TRACE}
 \begin{document}
-
-\title{\sys: Trust-Constrained, Category-Aware Request Routing for AI Inference in Edge-Cloud Collaborative Systems}
-
-% ---- AUTHORS: replace every [bracketed] field. Authors go here, at the BEGINNING, under the title.
-% ---- Affiliations and e-mails go in the \thanks footnote (printed at the bottom of page 1).
-% ---- For double-blind review, temporarily replace names with "Anonymous Author(s)".
-\author{[First Author Name],~\IEEEmembership{[Student Member,~IEEE]}
-        and~[Second Author Name],~\IEEEmembership{[Member,~IEEE]}%
-\thanks{[First Author Name] and [Second Author Name] are with the [Department], [University], [City], [Country] (e-mail: [first.author@university.edu]; [second.author@university.edu]).}%
-\thanks{Manuscript received [Month Day, Year]; revised [Month Day, Year].}}
-
-% running head on pages 2+: journal name (left) and short author list + title (right)
-\markboth{[Journal Name],~Vol.~[X], No.~[X], [Month]~[Year]}%
-{[First Author Surname] \MakeLowercase{\textit{et al.}}: Trust-Constrained Request Routing for Edge AI Inference}
+\title{TRACE: Trust-Constrained, Category-Aware Request Routing for AI Inference in Edge-Cloud Collaborative Systems}
+\author{Nithish~Kumar, Ganesh~Khekare$^{*}$, and Gaurav~Nitesh~Gandhi\\[4pt]
+{\normalsize School of Computer Science and Engineering, Vellore Institute of Technology, Vellore, Tamil Nadu, India}\\
+{\normalsize nithishkumar.r2023@vitstudent.ac.in, ganesh.khekare@vit.ac.in$^{*}$, gauravnitehs.gandhi2023@vitstudent.ac.in}\\
+{\normalsize $^{*}$Corresponding author}}
 \maketitle
 
-% =====================================================================
 \begin{abstract}
-Edge-cloud collaborative systems increasingly serve AI inference---from image classification to large language models---on fragmented, heterogeneous edge servers. Recent frameworks such as EPARA raise edge goodput by categorizing requests by latency/frequency sensitivity and GPU demand and by offloading requests to peers in proportion to their idle capacity. These request handlers, however, treat every server that hosts a model as a valid destination and ignore the energy budgets of power-capped or battery-backed sites. We study what changes when both constraints are made explicit. We formalize trust-constrained routing, in which a request's sensitivity restricts it to servers of sufficient clearance and, for the most sensitive data, to the origin's trust domain, and we define \emph{compliant goodput} as the rate of requests that are both timely and served lawfully. We propose \sys{}, a decentralized request router that adds a hard trust filter and a best-fit clearance preference to capacity-proportional offloading at a cost of tens of microseconds per decision. In an event-driven simulation of 30 heterogeneous edge servers serving the four EPARA request categories, trust-oblivious routers serve 17--20\% of requests outside their trust boundary at every load. \sys{} eliminates these violations and raises compliant goodput by 22\% over an EPARA-style router at 80\% load, while staying within 2.3\% of that router's raw, partly unlawful, goodput. Best-fit clearance adds up to 5.1 percentage points of compliant SLO attainment when 40--60\% of traffic is sensitive. We also report a negative result: weighting offload decisions by energy headroom, our original hypothesis, never significantly improves compliant SLO attainment and reduces it by 10--28 points under a hard-outage battery model. We show that this is not caused by stale information but by energy-aware routing being non-work-conserving. All parameters are documented assumptions, and the simulator is provided for reproduction.
+Edge-cloud collaborative systems increasingly serve AI inference on fragmented, heterogeneous edge servers. Decentralized request handlers such as EPARA's offload requests to peers in proportion to their idle capacity, but treat every server that hosts a model as a lawful destination. We formulate trust-constrained routing as goodput maximization subject to zero violations, using multilevel-security labels (clearance and trust domain), an explicit threat model in which ingress servers relay but do not process data, and a closed-form expression showing that the violation rate of trust-oblivious routing is fixed by the label distributions. We present TRACE, a decentralized router that combines a hard trust filter, SLO-aware admission and an adaptively enabled best-fit clearance preference with capacity-proportional offloading, at about 20 µs per decision. In simulation with 30 heterogeneous servers, 30 evaluation seeds and Holm-corrected paired tests, compliance costs 1.2 points of SLO attainment for a centralized dispatcher with perfect information and 2.7 points for decentralized routing at the default traffic mix, rising with the share of sensitive traffic. TRACE attains 0.960 compliant SLO attainment at 80\% load, 2.9 points below the centralized oracle; it is tied with a trust-filtered join-the-shortest-queue router below saturation and ahead of it, of trust-filtered power-of-two-choices and round-robin routing and of static per-tier pools at and beyond saturation (by 8 to 34 points at 100\% load). SLO-aware admission is the decisive element in overload, raising every router's attainment at 100\% load by more than 50 points. Aligning data sensitivity with ingress clearance reduces, but does not remove, violations of trust-oblivious offloading (13.5\% at full alignment). We also test whether weighting offload decisions by energy headroom helps on energy-constrained sites: it is harmful when energy is scarce and an empty buffer throttles work (9.2 points), gives small gains that are not significant after correction under hard outages, and is neutral when supply is sufficient. All parameters are documented assumptions, and the simulator and raw results are public.
 \end{abstract}
 
 \begin{IEEEkeywords}
-Edge-cloud collaborative computing, AI inference serving, request offloading, privacy, trust domains, energy-aware scheduling, stale load information.
+Edge-cloud collaborative computing, AI inference serving, request offloading, multilevel security, trust domains, admission control, energy-aware scheduling
 \end{IEEEkeywords}
 
-% =====================================================================
-\section{Introduction}\label{sec:intro}
+\section{Introduction}
 
-\IEEEPARstart{A}{I} inference is moving toward the network edge. Video analytics, interactive assistants and robot control need responses within tens to hundreds of milliseconds, and the data they process---camera frames, medical signals, voice---is increasingly subject to privacy regulation. Edge-cloud collaborative computing (ECCC) answers with a three-tier architecture in which nearby edge servers absorb most of the work and offload to peers or the cloud when they are overloaded~\cite{liu2025eccc}. Individually, edge servers are small and heterogeneous; collectively, their scattered capacity is substantial if requests can be routed to it quickly.
+Workloads based on inferencing are moving towards the ``edge'' in networks. Video analytics applications, voice assistant applications and robotic control applications require their responses to be delivered within tens to hundreds of milliseconds, and all of these applications take input from consumers who are subject to increasing amounts of privacy regulation. The response has been an architecture known as ``edge-cloud collaborative computing,'' which uses a three-tiered architecture: the first tier consists of edge servers that are located near the consumer and perform nearly all of the workload; when edge servers cannot handle additional workload, the workload is passed to other edge servers or to the cloud \cite{liu2025eccc}. Each individual edge server is relatively small and the set of edge servers is heterogeneous; however, there exists a significant amount of combined idle capability across the entire set of servers if incoming requests can be routed quickly to available servers.
 
-EPARA~\cite{epara2025} is a recent and representative design for this setting. It categorizes inference tasks along two axes---latency- versus frequency-sensitive, and needing less versus more than one GPU---and applies batching, multi-task co-location, model parallelism, multi-frame batching and request-level data parallelism accordingly. A decentralized request handler then serves each request locally or offloads it to a peer with probability proportional to that peer's idle goodput, and a periodic, submodular service-placement step keeps models where demand is. EPARA reports up to $2.1\times$ the goodput of prior edge and datacenter serving systems~\cite{epara2025}.
+EPARA \cite{epara2025} is a recent example of this type of architecture. EPARA classifies inference services along two dimensions: whether a service is latency-sensitive or frequency-sensitive, and whether it needs less or more than one graphics processing unit (GPU). Based upon this classification, EPARA selects a parallelization strategy for each class. A decentralized request handler is used to determine when to keep a request at its current location and when to forward the request to a peer edge server. When deciding where to send a request, the request handler uses a probabilistic decision rule where the probability of sending the request to a given peer is directly related to that peer's idle goodput. At a regular interval, EPARA also uses a placement mechanism to move models closer to demand. EPARA was evaluated through comparison to several previously developed architectures for serving both edge and centralized inference services \cite{epara2025}.
 
-Like the systems it is compared against~\cite{interedge,galaxy,servp,alpaserve,usher}, EPARA's handler assumes that any server hosting the requested model is an acceptable destination. In practice this is often false. A hospital's imaging request may only be processed by certified operators; data subject to residency rules must stay within a jurisdiction or organization~\cite{gdpr}. A router that ignores such constraints can raise raw goodput while quietly serving a fraction of requests unlawfully. A second implicit assumption is that energy is unconstrained. Many edge sites are power-capped, solar-powered or battery-backed, and it seems natural to steer work toward servers with more energy headroom, as energy-aware offloading work does for devices~\cite{mao2016harvest,min2019privacy}.
+All of the previous architectures \cite{interedge,galaxy,servp,alpaserve,usher} were designed so that any server that hosts a model can receive any request. In real-world scenarios this assumption often does not hold. For example, imaging data collected by a hospital may need to be processed only by certified operators. Similarly, residency restrictions may confine data processing within an organizational or governmental boundary \cite{gdpr,hummel2021}. A router that does not enforce these types of constraints can indicate high levels of goodput even though some portion of the traffic being served could be considered unlawful. A second implicit assumption concerns energy: many edge sites are power-capped, solar-powered or battery-backed, and steering work toward servers with spare energy, as energy-aware offloading does for mobile devices \cite{mao2016harvest}, looks like an obvious refinement.
 
-This paper asks two questions. \emph{What does it cost, in timely and lawful goodput, to enforce trust constraints inside a fast decentralized inference router, and can routing reduce that cost?} And \emph{does adding energy headroom to the offload score help when energy is scarce?}
+As such, we address request routing as a constrained optimization problem: maximize timely service while ensuring all requests are processed within their respective trust boundaries. Two questions then emerge. How much timely service does a fast decentralized router lose by complying with the trust constraints, measured against unconstrained and centralized references, and which routing rules minimize this loss? Additionally, does energy awareness in making offload decisions help, and at what levels of available supply?
 
-We make the following contributions:
+The authors' contributions include:
+
 \begin{itemize}
-\item \textbf{Model.} We formalize trust-constrained request routing for categorized edge inference, with server clearance levels and trust domains, request sensitivity, and a soft-throttling and a hard-outage energy model. We define \emph{compliant goodput}, which credits only requests that are both timely and lawful (Section~\ref{sec:model}).
-\item \textbf{Design.} We present \sys{}, which keeps EPARA's operator layer and capacity-proportional offloading and adds a hard trust filter and a \emph{best-fit clearance} preference that keeps high-clearance capacity free for sensitive requests. A routing decision is $O(N)$ local computation with no communication (Section~\ref{sec:design}).
-\item \textbf{Evaluation.} With an event-driven simulator over 10 seeds and paired statistical tests, we show that trust-oblivious routers violate trust constraints for 17--20\% of requests at every load. \sys{} removes all violations and increases compliant goodput by 22\% over an EPARA-style router at 80\% load, and best-fit clearance adds up to 5.1 points when much of the traffic is sensitive (Section~\ref{sec:results}).
-\item \textbf{Negative result and analysis.} Energy-headroom weighting---in four variants and under both energy models---never significantly improves compliant SLO attainment and reduces it by up to 28 points under hard outages. Varying the state-sync period rules out stale-information herding; the cause is that energy-aware avoidance is non-work-conserving and concentrates load (Section~\ref{sec:discussion}).
-\item \textbf{Methodological findings.} A round-robin baseline with a pointer shared by all servers embeds implicit global coordination and overstates its performance at saturation, and per-request SLO attainment is dominated by the most numerous request class; we report a category-balanced metric alongside it.
+\item
+  \textbf{Model.} The authors provide a model for trust-constrained routing of categorized edge inference. This includes multi-level security labels (clearance and trust domain) and the stated threat model; the threat model describes how ingress servers forward data even if they are not permitted to process it. Additionally, a closed-form expression is provided for the violation rate of trust-oblivious routing, demonstrating that the violation rate is determined by the distribution of the labels, and not by the behavior of the router itself (Section III).
+\item
+  \textbf{Design.} The authors extend capacity-proportional offloading with a hard trust filter and a best-fit clearance preference, which each server switches on once it has observed sufficient sensitive traffic. Furthermore, SLO-aware (Service Level Objective) admission is used to shed, or send to the cloud, those requests that can no longer meet their SLO deadlines. Each decision takes approximately tens of microseconds of local processing time (Section IV).
+\item
+  \textbf{Evaluation against strong references.} The authors evaluate TRACE against five reference routers: trust-filtered round-robin, power-of-two-choices and join-the-shortest-queue routing, static per-tier pools, and a centralized dispatcher that has perfect knowledge. The evaluation uses thirty evaluation seeds, and all comparisons use Holm-corrected paired tests. Additionally, the authors vary the correlation between data sensitivity and ingress clearance, the proportion of sensitive traffic, overload conditions, state staleness, placement, the availability of a cloud fallback, network topology and every routing parameter (Section VI).
+\item
+  \textbf{Energy-aware routing as a testable hypothesis.} Five energy-aware variants are described and evaluated, including a feasibility oracle that has perfect knowledge of energy, over supply ratios below and above demand, constant and phase-shifted solar supply, and short and long battery buffers; the mechanisms behind the results (load dispersion, availability and forwarding) are measured directly (Section VII).
 \end{itemize}
 
-All numbers come from simulation with documented, assumed parameters modeled on EPARA's testbed scale; they are not measurements on hardware and are not comparable in absolute terms with EPARA's reported results.
+All results come from simulation with documented, assumed parameters at the scale of EPARA's testbed. They are not hardware measurements and should not be compared in absolute terms with EPARA's reported numbers.
 
-% =====================================================================
-\section{Background and Related Work}\label{sec:related}
+\section{Background and Related Work}
 
-\textbf{Categorized parallel inference at the edge.}
-EPARA~\cite{epara2025} categorizes inference tasks along two axes and applies five operators accordingly: batching (BS), multi-task co-location (MT), model parallelism (MP), multi-frame batching (MF) and request-level data parallelism (DP). It couples this allocator with a decentralized greedy request handler that offloads a request to a peer with probability proportional to the peer's idle goodput, a submodular service-placement algorithm with a $1/(1+P)$ guarantee~\cite{fisher1978submodular}, and ring-based state synchronization. Its handler, like those of the edge systems it compares against (InterEdge~\cite{interedge}, Galaxy~\cite{galaxy}, SERV-P~\cite{servp}) and of datacenter serving systems (AlpaServe~\cite{alpaserve}, USHER~\cite{usher}, Nexus~\cite{nexus}, SHEPHERD~\cite{shepherd}, Clockwork~\cite{clockwork}, INFaaS~\cite{infaas}), treats every server that hosts a model as a valid destination for every request. We retain EPARA's operator layer and capacity-proportional offloading and ask what changes when destinations are restricted by trust and powered by constrained energy.
+\textbf{Categorized parallel inference at the edge.} EPARA \cite{epara2025} categorizes inference tasks along two axes and applies five operators accordingly: batching, multi-task co-location, model parallelism, multi-frame batching and request-level data parallelism. It couples this allocator with a decentralized request handler that offloads a request to a peer with probability proportional to the peer's idle goodput, a submodular service-placement algorithm with a \(1/(1+P)\) guarantee \cite{fisher1978submodular}, and ring-based state synchronization. Its handler, like those of the edge systems it compares against (InterEdge \cite{interedge}, Galaxy \cite{galaxy}, SERV-P \cite{servp}) and of datacenter serving systems (AlpaServe \cite{alpaserve}, USHER \cite{usher}, Nexus \cite{nexus}, SHEPHERD \cite{shepherd}, Clockwork \cite{clockwork}, INFaaS \cite{infaas}), treats every server that hosts a model as a valid destination. We study EPARA's \emph{request-handling} layer. Its operators are not modelled mechanistically: we reduce each category to a fixed slot and service-time profile (Section V), so batching gains and co-location interference are outside the scope of this paper.
 
-\textbf{Edge-cloud collaborative intelligence.}
-A recent survey~\cite{liu2025eccc} organizes ECCC research into model optimization, AI-driven resource management (latency-, energy- and dependency-aware offloading) and privacy/security enhancement, and names heterogeneity management and real-time scheduling as open challenges. Model partitioning between device and cloud~\cite{neurosurgeon} and collaborative edge LLM inference~\cite{edgeshard} address \emph{where to compute a model}; we address \emph{where a request may be served}.
+\textbf{Edge-cloud collaborative intelligence.} A recent survey \cite{liu2025eccc} organizes ECCC research into model optimization, AI-driven resource management and privacy/security enhancement, and names heterogeneity management and real-time scheduling as open challenges. Model partitioning between device and cloud \cite{neurosurgeon} and collaborative edge LLM inference \cite{edgeshard} address \emph{where to compute a model}; we address \emph{where a request may be served}.
 
-\textbf{Privacy-aware offloading.}
-Most privacy-aware offloading work protects information leaked \emph{by the act of offloading}---location and usage-pattern privacy---often with reinforcement learning, e.g., for healthcare IoT with energy harvesting~\cite{min2019privacy}. Federated learning~\cite{mcmahan2017fl} keeps training data local. Regulatory regimes such as the GDPR~\cite{gdpr} instead impose \emph{hard} constraints on who may process which data and where. We model these as a hard eligibility constraint inside a decentralized inference router and quantify their throughput cost, which, to our knowledge, prior edge inference-serving systems do not report.
+\textbf{Multilevel security and data sovereignty.} Eq. (2) is a two-attribute instance of multilevel-security labelling. The Bell--LaPadula model \cite{bell1973} assigns subjects and objects levels from an ordered set and forbids a subject from reading data above its clearance; Denning's lattice model \cite{denning1976} generalizes this to a lattice of security classes along which information may flow only upward. Our clearance levels form such an ordered set, and the trust-domain condition for the highest sensitivity adds a compartment, so the eligible destinations of a request are exactly the servers whose (clearance, domain) label dominates the request's label. Work on data sovereignty \cite{hummel2021} and legal frameworks like the GDPR \cite{gdpr} make the domain compartment necessary because certain data can only be processed under the authority of specific organizations or jurisdictions. This paper does not add to this theoretical framework; it uses its most basic formulation as a hard constraint inside a fast decentralized router and then reports on the cost of doing so.
 
-\textbf{Energy-aware offloading.}
-Offloading with energy-harvesting devices has been studied with Lyapunov optimization~\cite{mao2016harvest}, and carbon-aware provisioning has been proposed for datacenter LLM serving~\cite{ecoserve}. A natural extension of EPARA's handler is to scale the offload score by each peer's energy headroom. We show that, in a decentralized router fed by periodically synchronized state, this extension is counter-productive.
+\textbf{Privacy- and security-aware fog and edge scheduling.} Prior work classifies applications by privacy level and restricts where they can run. Singh et al. \cite{singh2021fog} divided applications into three categories, public, semi-private and private, which were to be hosted on untrusted, semi-trusted and trusted resources, respectively; interactive and batch jobs were placed by a distributed orchestrator that weighed each job's performance against its security requirements. PASHE \cite{fizza2018pashe} schedules real-time public, semi-private and private jobs across edge micro data centers and the cloud, and executes private jobs with tight deadlines on the user's local micro data center. Our clearance levels and sensitivities follow the same conceptual approach. The differences are in the setting and the questions asked: we route individual requests of categorized GPU inference services, decentralized and in microseconds, from periodically synchronized state; we add a domain compartment for the most sensitive data; and we quantify the cost of compliance against both centralized and unconstrained references rather than proposing placement heuristics. Learning-based privacy-aware offloading \cite{min2019privacy} protects information leaked by the act of offloading, and federated learning \cite{mcmahan2017fl} keeps training data local. We address a different point in the design space, per-request decentralized routing of categorized inference, and we compare against the decentralized and centralized references a practitioner would consider (round-robin, power of two choices, join-the-shortest-queue, static pools and a centralized dispatcher with perfect information).
 
-\textbf{Load balancing with stale information.}
-Mitzenmacher showed that sending jobs to the apparently least-loaded server under stale load information causes herd behavior, whereas randomized choices degrade gracefully~\cite{mitzenmacher2000old,mitzenmacher2001two}. EPARA computes idle goodput from state synchronized periodically. We test whether this classic effect explains the failure of energy-weighted routing and find that it does not (Section~\ref{sec:res-energy}).
+\textbf{Admission control in inference serving.} Clockwork \cite{clockwork} and Nexus \cite{nexus} drop requests that can no longer meet their SLO instead of executing them late, because late work consumes capacity without contributing goodput. We find that the same principle is decisive for decentralized edge routing near saturation (Section VI-D).
 
-% =====================================================================
-\section{System Model and Problem Formulation}\label{sec:model}
+\textbf{Energy-aware offloading.} Offloading with energy-harvesting devices has been studied with Lyapunov optimization \cite{mao2016harvest}, and carbon-aware provisioning has been proposed for datacenter LLM serving \cite{ecoserve}. A natural extension of EPARA's handler is to scale the offload score by each peer's energy headroom. We test this hypothesis in Section VII.
+
+\textbf{Load balancing with stale information.} Assigning jobs to the server that appears to have the lowest workload using stale information leads to herd behavior, whereas randomized assignment degrades smoothly \cite{mitzenmacher2000old}. The power of two choices \cite{mitzenmacher2001two} and join-the-shortest-queue \cite{winston1977} are the standard references. EPARA computes idle goodput from periodically synchronized state, and we include both methods as trust-filtered baselines.
+
+\section{System Model and Problem Formulation}
 
 \subsection{Edge servers, trust and energy}
-The system has a set $\mathcal{N}$ of $N$ edge servers. Server $j$ has $S_j$ GPU \emph{slots} (MPS partitions, four per GPU), a \emph{clearance level} $c_j\in\{0,1,2\}$ and an administrative \emph{trust domain} $d_j$. Clearance captures the certification of the operator (e.g., public, certified, regulated); the domain captures ownership or jurisdiction. Network latency between servers $i$ and $j$ is $\ell_{ij}$.
 
-Energy is supplied at a capped rate $\bar P_j=\kappa_j S_j P_s$, where $P_s$ is the power of one active slot and $\kappa_j\in(0,1]$ the cap fraction (power-capped, solar or battery-backed sites). Server $j$ holds an energy buffer $E_j(t)\in[0,B_j]$ that is refilled at rate $\bar P_j$ and drained by $P_s$ per active slot. We study two consequences of an empty buffer:
-(i) \emph{soft throttling}: when $E_j/B_j<5\%$, a request runs $1.6\times$ slower and a stream cannot start; and
-(ii) \emph{hard outage}: when $E_j/B_j\le1\%$, the server goes offline until it recharges to $30\%$.
+Our system contains a set \(\mathcal{N}\) of \(N\) edge servers. Each edge server \(j\) has \(S_j\) GPU slots (MPS partitions, four per GPU), a clearance level \(c_j\in\{0,1,2\}\) and an administrative trust domain \(d_j\). The clearance represents the degree of certification held by the operator of the server (e.g., public, certified, regulated), while the domain describes either ownership or jurisdiction. There is a network latency \(\ell_{ij}\) between servers \(i\) and \(j\). There is also an optional cloud tier, which offers \(S_\mathrm{cl}\) slots at a one-way latency \(\ell_\mathrm{cl}\). The cloud tier has clearance \(c_\mathrm{cl}=1\) (a certified service provider) but does not belong to any edge domain.
+
+Each server receives energy at a mean rate \(\bar P_j=\kappa_j S_j P_s\), where \(P_s\) is the power consumed by one active slot and \(\kappa_j\) is the supply fraction. The supply comes either from a constant source or from a solar source, \(P_j(t)=\bar P_j\,(1+\sin(2\pi t/T_\mathrm{s}+\varphi_j))\), with phases \(\varphi_j\) that vary across three time zones. Each server \(j\) maintains an energy buffer \(E_j(t)\le B_j\) as reserve capacity. This buffer is replenished by the supply and charged \(P_s\) per slot-second when a job is committed. We use the \emph{supply ratio} to describe the overall scarcity in the system:
+
+\begin{equation}
+\Phi=\frac{\sum_j \bar P_j}{\rho\sum_j S_j P_s}
+\end{equation}
+
+the average supply divided by the power required to serve the offered load \(\rho\); if \(\Phi<1\), no router is capable of serving all of the demand.
+
+We investigate two possible results when a server's buffer becomes depleted: (i) \emph{soft throttling}, where, once \(E_j/B_j<5\%\), requests run 1.6\(\times\) slower and streams cannot start; and (ii) \emph{hard outage}, where, once \(E_j/B_j\le 1\%\), a server accepts no additional jobs until it has recharged its buffer to 30\%. Both models allow jobs that have already been admitted to complete execution; the energy for these jobs is charged at admission, and thus the buffer may be overdrawn, which models a protected battery reserve that is repaid before the server recovers.
 
 \subsection{Requests and categories}
-A request $r$ arrives at origin server $o_r$ at time $a_r$ for service $l_r$ and carries a \emph{sensitivity} $s_r\in\{0,1,2\}$. Following EPARA, each service belongs to one of four categories: latency-sensitive (LS) or frequency-sensitive (FS), crossed with $<1$ or $>1$ GPU. After EPARA's operator selection, service $l$ occupies $m_l$ slots for $\tau_l$ seconds (for an FS stream, for the stream's duration). An LS request succeeds if it completes by $a_r+\mathrm{SLO}_l$; an FS stream succeeds if it starts within $\mathrm{SLO}_l$ and runs unthrottled.
 
-\subsection{Trust constraint}
-Request $r$ may be served by server $j$ only if
+A request \(r\) arrives at its \emph{ingress} server \(o_r\) at time \(a_r\) for service \(l_r\) and carries a sensitivity \(s_r\in\{0,1,2\}\). Following EPARA, there are four classes of services: latency-sensitive (LS) or frequency-sensitive (FS) services, each further divided into services that need less than one GPU and services that need more than one GPU. Service \(l\) occupies \(m_l\) slots for \(\tau_l\) seconds (for an FS stream, for the duration of the stream). An LS request is successful as long as it finishes by \(a_r+\mathrm{SLO}_l\). Similarly, an FS stream is successful as long as it starts within \(\mathrm{SLO}_l\) and runs without throttling.
+
+\subsection{Trust constraint and threat model}
+
+A server \(j\) may \emph{process} request \(r\) only if
+
 \begin{equation}
-\mathrm{elig}(r,j)\;=\;\big[c_j\ge s_r\big]\;\wedge\;\big[s_r<2\;\vee\;d_j=d_{o_r}\big].\label{eq:elig}
+\mathrm{elig}(r,j)=\big[c_j\ge s_r\big]\wedge\big([s_r<2]\vee[d_j=d_{o_r}]\big)
 \end{equation}
-Sensitivity-1 data therefore requires a certified operator, and sensitivity-2 data must additionally stay within the origin's domain. Serving $r$ at an ineligible server is a \emph{trust violation}.
 
-\subsection{Objective}
-Let $y_r\in\{0,1\}$ indicate that $r$ met its SLO and $v_r\in\{0,1\}$ that it was served at an ineligible server. Over a horizon $T$ we maximize \emph{compliant goodput}
+Sensitivity-1 data therefore requires a certified operator, and sensitivity-2 data must, in addition, stay within the ingress server's domain. If an ineligible server processes a request, that represents a trust violation. In lattice terms \cite{bell1973,denning1976}, Eq. (2) admits exactly the servers whose (clearance, domain) label dominates the label of the request.
+
+\emph{Processing versus relaying.} We distinguish processing, which requires the plaintext input, from relaying. The device encrypts the payload end-to-end for the processing server and sends only the routing metadata (\(l_r\), \(s_r\), \(d_{o_r}\)) in the clear; a server that merely forwards the request, including an ineligible ingress server, never sees the plaintext. Eligibility is therefore checked only where the request is processed. Deployments that cannot provide end-to-end encryption must instead let devices attach only to eligible ingress servers; this corresponds to full alignment (\(\lambda=1\)) in Section VI-C, where we show that offloading still produces violations unless the router enforces (2).
+
+\emph{Threat model.} Operators of ineligible servers are honest-but-curious: they forward correctly and do not collude to break encryption. Clearance and domain labels are bound to each server by remote attestation \cite{coker2011} (for example, a trusted execution environment \cite{costan2016sgx} reporting a measured software stack and a certificate issued by the domain's policy authority), and the routing state carries only attested labels. Compromised attestation, side channels, traffic analysis of metadata and misbehaving eligible servers are out of scope. Under these assumptions, a router that enforces (2) at the processing server cannot cause a violation, whereas a router that ignores (2) causes one whenever it processes a request at an ineligible server.
+
+\subsection{Objective: goodput subject to compliance}
+
+Now let \(y_r\in\{0,1\}\) denote whether \(r\) met its SLO, and \(v_r\in\{0,1\}\) whether \(r\) was processed at an ineligible server. We view routing as a constrained optimization problem:
+
 \begin{equation}
-G_c=\frac{1}{T}\sum_{r}y_r\,(1-v_r),\label{eq:obj}
+\max\ G=\frac{1}{T}\sum_r y_r\quad\text{s.t.}\quad v_r=0\ \ \forall r
 \end{equation}
-so a request counts only if it is both timely and lawful. We report compliant SLO attainment $G_cT/|\mathcal{R}|$, its \emph{category-balanced} version (the mean of the four per-category values, so the most numerous category does not dominate), raw SLO attainment and the violation rate. Each server makes routing decisions independently, in microseconds, from a view of its peers refreshed every $H$ seconds. Service placement and operator selection are taken as given; they are EPARA's coarse-grained layers. Table~\ref{tab:notation} summarizes the notation.
 
-\begin{table}[t]
+We compare routers that satisfy the constraint by construction on their SLO attainment \(G\,T/|\mathcal R|\) and on its category-balanced counterpart (the average of the four per-category values), so that the numerous short classification requests do not dominate. The cost of compliance is the difference in raw SLO attainment between a router without the constraint and one with it; we measure it both for EPARA-style routing and for a centralized dispatcher with perfect knowledge. A router that ignores (2) is not a feasible solution of (3), and we therefore present such routers only as reference points, using compliant goodput \(G_c=\frac1T\sum_r y_r(1-v_r)\) only to illustrate what they deliver lawfully.
+
+\subsection{How large are violations without a trust filter?}
+
+The violation rate of a trust-oblivious router depends on the label distributions rather than on how the router is designed. If a request is processed at its ingress server, and sensitivities are assigned independently of the ingress clearance,
+
+\begin{equation}
+V_\mathrm{loc}=\sum_{c} \Pr[c_{o}=c]\,\Pr[s_r>c]
+\end{equation}
+
+(no domain violation can occur at the ingress server). With clearances 0/1/2 with probability 0.3/0.4/0.3 and sensitivities with probability 0.60/0.24/0.16, we get \(V_\mathrm{loc}=0.3\cdot0.40+0.4\cdot0.16=18.4\%\); when destinations are drawn uniformly at random, we obtain \(0.24\cdot0.3+0.16\cdot(1-0.3/3)=21.6\%\). In this paper, we report the simulated violation rates of trust-oblivious routers solely as a check of these values, not as findings. As well, because sensitive information mostly originates at high-clearance sites, we also let a fraction \(\lambda\) of requests originate only at servers whose clearance covers their sensitivity; \(V_\mathrm{loc}\) then falls to \((1-\lambda)V_\mathrm{loc}\), but offloaded requests can still violate the constraint (Section VI-C).
+
+\begin{table*}[!t]
 \centering
-\caption{Notation.}\label{tab:notation}
+\caption{Notation.}
 \footnotesize
-\begin{tabular}{@{}ll@{}}
+\begin{tabular}{@{}p{0.3\linewidth}p{0.66\linewidth}@{}}
 \toprule
 Symbol & Meaning \\
 \midrule
-$\mathcal{N}$, $N$ & set and number of edge servers \\
-$S_j$ & GPU slots (MPS partitions) of server $j$ \\
-$c_j$, $d_j$ & clearance level and trust domain of server $j$ \\
-$\ell_{ij}$ & network latency between servers $i$ and $j$ \\
-$P_s$, $\kappa_j$, $\bar P_j$ & slot power, energy-cap fraction, capped power \\
-$E_j(t)$, $B_j$ & energy buffer level and capacity \\
-$o_r$, $a_r$, $l_r$, $s_r$ & origin, arrival time, service and sensitivity of $r$ \\
-$m_l$, $\tau_l$, $\mathrm{SLO}_l$ & slots, service time and SLO of service $l$ \\
-$\mathrm{elig}(r,j)$ & trust-eligibility of server $j$ for request $r$, Eq.~\eqref{eq:elig} \\
-$y_r$, $v_r$ & SLO met; trust violation \\
-$G_c$ & compliant goodput, Eq.~\eqref{eq:obj} \\
-$\hat\sigma_{ij}$, $\hat h_{ij}$ & $i$'s view of $j$'s spare slots and energy headroom \\
-$H$, $\Delta$ & state-sync period; capacity horizon (0.5\,s) \\
-$w_{ij}(r)$ & offload weight, Eq.~\eqref{eq:w} \\
-$\gamma$ & best-fit strength ($\gamma=1$: plain trust filter) \\
-$\beta$, $\theta$ & energy-weight exponent; retention threshold \\
-$K_{\max}$ & maximum forwards per request \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-% =====================================================================
-\section{Design of \sys}\label{sec:design}
-
-\begin{figure*}[t]
-\centering
-\resizebox{\textwidth}{!}{%
-% --- begin inline: gen/fig_arch.tex (generated from the experiment data) ---
-\begin{tikzpicture}[
-  font=\footnotesize, >=Stealth,
-  srv/.style={draw, rounded corners=2pt, minimum width=1.55cm, minimum height=0.9cm, align=center, line width=0.6pt},
-  dev/.style={draw, rounded corners=1pt, minimum width=0.6cm, minimum height=0.4cm, fill=gray!10},
-  stp/.style={draw, rounded corners=2pt, text width=5.6cm, minimum height=0.7cm, align=left, inner sep=4pt, line width=0.6pt},
-  dec/.style={draw, diamond, aspect=3.2, inner sep=0.5pt, align=center, fill=white, line width=0.6pt, font=\scriptsize},
-  lab/.style={font=\scriptsize\itshape, text=black!75}]
-% ---------------- left: topology ----------------
-\node[draw, rounded corners=6pt, fill=gray!8, minimum width=6.0cm, minimum height=0.85cm, align=center] (cloud) at (3.3,5.0)
-  {\textbf{Cloud tier}: periodic service placement (EPARA)};
-\node[srv, fill=cA!22] (s1) at (0.0,3.0) {$S_1$\\$c{=}2,\ d{=}A$};
-\node[srv, fill=cB!28] (s2) at (2.2,3.0) {$S_2$\\$c{=}0,\ d{=}B$};
-\node[srv, fill=cA!22] (s3) at (4.4,3.0) {$S_3$\\$c{=}1,\ d{=}A$};
-\node[srv, fill=cC!25] (s4) at (6.6,3.0) {$S_4$\\$c{=}2,\ d{=}C$};
-\foreach \s in {s1,s2,s3,s4} \draw[gray!55] (cloud.south) -- (\s.north);
-\foreach \a/\b in {s1/s2, s2/s3, s3/s4} \draw[<->, dashed, gray] (\a.east) -- (\b.west);
-\node[lab] at (3.3,3.85) {edge tier: ring state sync every $H$ (dashed)};
-% offloads
-\draw[->, very thick, cTRACE] (s3.south) to[bend right=35] node[pos=0.5, below=1pt, lab, text=cTRACE!80!black] {allowed ($c_4{\ge}s_r$)} (s4.south);
-\draw[->, very thick, cEB] (s1.south) to[bend right=35] node[pos=0.5, below=1pt, lab, text=cEB] {blocked ($c_2{<}s_r$)} (s2.south);
-\node[cEB, font=\Large\bfseries] at (1.1,2.18) {$\times$};
-% devices
-\node[dev] (d1) at (-0.45,0.55) {};
-\node[dev] (d2) at (0.45,0.55) {};
-\node[dev] (d3) at (3.95,0.55) {};
-\node[dev] (d4) at (4.85,0.55) {};
-\draw[->, line width=0.6pt] (d1.north) -- node[left, lab] {$s_r{=}0$} (s1.south west);
-\draw[->, line width=0.6pt] (d2.north) -- node[right, lab, pos=0.35] {$s_r{=}2$} (s1.south);
-\draw[->, line width=0.6pt] (d3.north) -- node[left, lab] {$s_r{=}1$} (s3.south west);
-\draw[->, line width=0.6pt] (d4.north) -- (s3.south east);
-\node[lab, align=center] at (2.2,0.0) {end devices (cameras, phones, robots)};
-\node[lab, align=center] at (3.3,-0.55) {fill colour = trust domain $d$;\quad $c$ = clearance;\quad $s_r$ = request sensitivity};
-% ---------------- right: per-request decision path ----------------
-\begin{scope}[xshift=9.6cm]
-\node[stp, fill=gray!8] (p1) at (2.9,5.45) {\textbf{1. Arrival} at server $i$: service $l_r$, category (LS/FS $\times$ $<$1/$>$1 GPU), sensitivity $s_r$};
-\node[stp, fill=gray!8] (p2) at (2.9,4.25) {\textbf{2. EPARA operator layer} (unchanged): BS, MT, MP, MF, DP $\Rightarrow$ $m_l$ slots for $\tau_l$};
-\node[dec] (p3) at (2.9,2.85) {$\mathrm{elig}(r,i)$, online and\\SLO feasible at $i$?};
-\node[stp, text width=1.2cm, fill=cTRACE!18, align=center] (srv) at (6.9,2.85) {\textbf{serve}\\at $i$};
-\node[stp, fill=cTF!14] (p4) at (2.9,1.45) {\textbf{3. Trust filter}: keep peers $j\notin V$ with\\ $c_j\ge s_r$ and ($s_r{<}2$ or $d_j{=}d_{o_r}$)};
-\node[stp, fill=cTRACE!14] (p5) at (2.9,0.2) {\textbf{4. Weight} (capacity, proximity, best-fit):\\[2pt]\centering $w_{ij}=\phi(\hat\sigma_{ij},m)\cdot\frac{1}{1+\ell_{ij}/\ell_0}\cdot\gamma^{\,c_j-s_r}$};
-\node[stp, fill=gray!8] (p6) at (2.9,-1.0) {\textbf{5. Sample} $j\propto w_{ij}$, debit $\hat\sigma_{ij}$, forward ($\le K_{\max}$ times)};
-\draw[->] (p1) -- (p2);
-\draw[->] (p2) -- (p3);
-\draw[->] (p3) -- node[above, lab] {yes} (srv);
-\draw[->] (p3.south) -- node[right, lab] {no} (p4.north);
-\draw[->] (p4) -- (p5);
-\draw[->] (p5) -- (p6);
-\draw[->] (p6.west) -- ++(-0.45,0) |- node[lab, pos=0.22, left] {at peer $j$} (p3.west);
-\end{scope}
-\end{tikzpicture}
-% --- end inline ---
-}
-\caption{Overview of \sys{}. Left: edge servers carry a clearance level $c$ and a trust domain $d$ (fill colour) and exchange state over a ring every $H$ seconds; the cloud tier runs EPARA's periodic placement. A request with sensitivity $s_r$ may only be offloaded to an eligible server (green arrow); an offload of a sensitivity-2 request to a clearance-0 server is blocked (red). Right: the per-request decision path executed by every server.}
-\label{fig:arch}
-\end{figure*}
-
-Fig.~\ref{fig:arch} summarizes the design. \sys{} replaces EPARA's request handler; the operator allocator and service placement are unchanged. Each server $i$ keeps a view of every peer $j$: spare slots $\hat\sigma_{ij}$ over a $\Delta=0.5$\,s horizon and energy headroom $\hat h_{ij}=E_j/B_j$, both taken from the last synchronization and debited locally by $i$'s own offloads since then.
-
-\subsection{Trust-filtered, capacity-proportional offloading}
-On arrival at server $i$ (the origin or a forwarding peer), $r$ is served locally if $i$ is eligible, online and can meet the SLO. Otherwise $i$ samples a peer $j$ with probability proportional to
-\begin{equation}
-w_{ij}(r)=\mathrm{elig}(r,j)\cdot\phi(\hat\sigma_{ij},m_{l_r})\cdot\frac{1}{1+\ell_{ij}/\ell_0}\cdot\gamma^{\max(0,\,c_j-s_r)},\label{eq:w}
-\end{equation}
-where $\phi(\sigma,m)=\sigma$ if $\sigma\ge m$ and $0.05\,\sigma$ otherwise (prefer peers that fit), $\ell_0=20$\,ms, and already visited servers are excluded. A request is forwarded at most $K_{\max}=2$ times; if no eligible peer remains, it is served late at the last eligible server or dropped. Sampling rather than picking the arg-max keeps the router robust to stale views~\cite{mitzenmacher2000old}.
-
-\subsection{Best-fit clearance}
-The last factor in~\eqref{eq:w}, with $\gamma\in(0,1]$, makes a request prefer the \emph{least} clearance that suffices. Without it, non-sensitive requests consume capacity on high-clearance servers, which are the only legal destinations for sensitive requests---the same fragmentation that best-fit addresses in bin packing. $\gamma=1$ recovers the plain trust filter (TF); \sys{} uses $\gamma=0.3$.
-
-\subsection{Energy-aware variants studied}
-To test the hypothesis that the offload score should also account for energy, we evaluate four extensions of TF:
-\textbf{EW} multiplies~\eqref{eq:w} by $\hat h_{ij}^{\beta}$;
-\textbf{EB} uses a barrier $\min\!\big(1,\max(0.05,\hat h_{ij}/0.3)\big)$ instead;
-\textbf{EC} treats energy as a capacity dimension, replacing $\hat\sigma_{ij}$ by $\min(\hat\sigma_{ij},\hat e_{ij})$, where $\hat e_{ij}=(E_j+\bar P_j\Delta)/(P_s\Delta)-\text{busy}_j$ is the number of slots the energy budget can power over the horizon; and
-\textbf{retention} hands a request off a server whose headroom is below $\theta$ when the SLO slack exceeds 50\,ms and a peer with headroom above $0.5$ fits.
-TF+EW (with retention) was the design advocated in our original proposal; ``EW only'' applies the energy weight without the trust filter.
-
-\begin{algorithm}[t]
-\caption{\sys{} request handling at server $i$}\label{alg:route}
-\begin{algorithmic}[1]
-\Require request $r$, visited set $V$, forward count $k$
-\If{$\mathrm{elig}(r,i)$ \textbf{and} $i$ online \textbf{and} local SLO feasible}
-  \State serve $r$ at $i$; \Return
-\EndIf
-\If{$k\ge K_{\max}$} \State serve late at $i$ if eligible, else drop; \Return \EndIf
-\State compute $w_{ij}(r)$ by~\eqref{eq:w} for all $j\notin V$
-\If{$\sum_j w_{ij}=0$} \State serve late at $i$ if eligible, else drop; \Return \EndIf
-\State sample $j\sim w_{ij}/\sum_{j'}w_{ij'}$; debit $\hat\sigma_{ij}$
-\State forward $r$ to $j$ with $V\cup\{j\}$ and $k+1$
-\end{algorithmic}
-\end{algorithm}
-
-\textbf{Complexity.} One decision costs $O(N)$ arithmetic on the local view and no communication; Section~\ref{sec:res-scale} reports measured decision times.
-
-% =====================================================================
-\section{Evaluation Methodology}\label{sec:method}
-
-\textbf{Simulator.} We built an event-driven simulator in Python/NumPy. It executes the full routing logic for every request but abstracts computation and transmission by service-time and latency tables---the methodology EPARA uses for its large-scale study~\cite{epara2025}. All parameters (Table~\ref{tab:params}) are \emph{assumptions} modeled on EPARA's P100 testbed scale. They are not measurements, and absolute numbers should not be compared with EPARA's. The simulator, experiment scripts and raw results are publicly available at \url{https://github.com/gaurav3611/edge-cloud-ai-routing}.
-
-\begin{table}[t]
-\centering\caption{Simulation parameters (defaults).}\label{tab:params}
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{@{}ll@{}}
-\toprule
-Servers $N$ & 30 (10--120 in the scale study) \\
-GPUs per server & 2 or 4 (uniform); 4 slots per GPU \\
-Clearance $c_j$ & 0/1/2 w.p. 0.30/0.40/0.30 \\
-Trust domains & 3, uniform \\
-Network latency & $2\,\text{ms}+20\,\text{ms}\times$ distance (unit square) \\
-Slot power $P_s$ & 60\,W (250\,W GPU / 4) \\
-Energy cap $\kappa_j$ & 0.45/0.70/1.0 w.p. 0.35/0.35/0.30, $\times$ scale \\
-Buffer $B_j$ & 20\,s at capped power; starts at 60\% \\
-Sync period $H$ & 1\,s (0.1--2\,s in the staleness study) \\
-Max.\ forwards $K_{\max}$ & 2 \\
-\midrule
-LS$<$1 (classification) & 1 slot, 30\,ms, SLO 150\,ms, 20\% of demand \\
-LS$>$1 (LLM chat) & 8 slots, 800\,ms, SLO 3\,s, 30\% \\
-FS$<$1 (video detection) & 2 slots, stream 5--15\,s, start SLO 200\,ms, 30\% \\
-FS$>$1 (video segmentation) & 8 slots, stream 5--10\,s, start SLO 300\,ms, 20\% \\
-\midrule
-Sensitivity mix $s_r$ & 0/1/2 w.p. 0.60/0.25/0.15 \\
-Arrivals & Poisson; log-normal origin hot spots; \\
- & $\pm80\%$ sinusoidal bursts, period 20\,s \\
-Run length & 30\,s (5\,s warm-up); 10 seeds \\
-\bottomrule
-\end{tabular}}
-\end{table}
-
-\textbf{Load.} Offered load $\rho$ is the demanded slot-seconds per second divided by the total number of slots. ``Share of demand'' in Table~\ref{tab:params} is measured in slot-seconds; by request count, classification requests are about 99\% of all requests, which is why we also report the category-balanced metric.
-
-\textbf{Baselines.} \emph{Local only} never offloads. \emph{Round-robin} (RR) forwards to the next server in a per-server cycle, an InterEdge-style decentralized baseline~\cite{interedge,epara2025}. \emph{EPARA-style} offloads with probability proportional to $\phi(\hat\sigma_{ij},m)$ and proximity, i.e.,~\eqref{eq:w} without the trust and best-fit factors. \emph{TF} is EPARA-style plus the trust filter ($\gamma=1$). All policies share the same operator layer, placement, topology and arrival sequence for a given seed.
-
-\textbf{Metrics and statistics.} We report raw and compliant SLO attainment (per request and category-balanced), compliant goodput~\eqref{eq:obj}, violation rate, throttled fraction, server availability (outage model), mean forwards per request and wall-clock routing time per request (Python prototype on an Apple M3). Values are means with 95\% Student-$t$ confidence intervals over 10 seeds (5 in the scale study); pairwise differences use paired Wilcoxon signed-rank tests over seeds. With 10 pairs, the smallest attainable two-sided $p$ is $0.002$.
-
-% =====================================================================
-\section{Results}\label{sec:results}
-
-\subsection{Trust violations and compliant goodput under load}\label{sec:res-load}
-
-Fig.~\ref{fig:load} and Table~\ref{tab:main} compare the routers across offered load. Every router that ignores trust constraints serves a large, load-independent fraction of requests at ineligible servers: 18--20\% for EPARA-style and round-robin offloading at all loads, and 17\% even for local-only service, because a request's own origin server is ineligible whenever its clearance is below the request's sensitivity (Fig.~\ref{fig:load}d). The trust filter removes all violations by construction.
-
-The filter costs little raw goodput and gains a great deal of compliant goodput. At $\rho=0.8$, the EPARA-style router serves 1737 requests/s in time, but only 1391 of them lawfully; \sys{} serves 1698 requests/s, all lawfully---a 22\% increase in compliant goodput, within 2.3\% of EPARA-style's raw goodput. The compliant SLO advantage of \sys{} over EPARA-style is $+0.159\pm0.074$ at $\rho=0.8$ and significant at every load we tested ($p=0.002$, \sys{} better on all 10 seeds at $\rho\in\{0.4,0.8,1.0\}$). The category-balanced metric tells the same story ($+0.147\pm0.039$ at $\rho=0.8$). The plain trust filter accounts for most of the gain ($+0.133\pm0.060$ over EPARA-style, $p=0.004$); with the default sensitivity mix, best-fit clearance adds a further $+0.026\pm0.041$, which is not significant ($p=0.065$).
-
-Capacity-proportional offloading itself is clearly better than round-robin below saturation (EPARA-style vs.\ RR at $\rho=0.8$: $+0.157$ compliant SLO, $p=0.002$), consistent with EPARA's design rationale~\cite{epara2025}. Near saturation the picture changes, which we analyze in Section~\ref{sec:res-stale}.
-
-\begin{figure*}[t]
-\centering
-\resizebox{\textwidth}{!}{%
-% --- begin inline: gen/fig_load.tex (generated from the experiment data) ---
-\begin{tikzpicture}
-\begin{groupplot}[group style={group size=4 by 1, horizontal sep=1.25cm},
-  width=4.6cm, height=3.7cm, grid=major, grid style={gray!20},
-  tick label style={font=\scriptsize}, label style={font=\scriptsize}, ylabel shift=-2pt,
-  title style={font=\scriptsize, yshift=-1ex}, every axis plot/.append style={},
-  legend style={font=\scriptsize, draw=none, column sep=6pt}, cycle list name=exotic]
-\nextgroupplot[title={(a)}, xlabel={Offered load $\rho$}, ylabel={C-goodput (req/s)}, legend columns=5, legend to name=leg:load]
-\addplot+[color=cLOC, mark=o, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,417.4) +- (0,75.4) (0.6,432.2) +- (0,79.7) (0.8,406.9) +- (0,57.2) (0.9,393.5) +- (0,73.9) (1,374.4) +- (0,64.9)};
-\addlegendentry{Local only}
-\addplot+[color=cRR, mark=triangle*, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,799.6) +- (0,45.4) (0.6,1127) +- (0,72.1) (0.8,1078) +- (0,98.9) (0.9,756.4) +- (0,168) (1,557.1) +- (0,108)};
-\addlegendentry{Round-robin}
-\addplot+[color=cEPARA, mark=*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,807.1) +- (0,40.8) (0.6,1191) +- (0,62.6) (0.8,1391) +- (0,187) (0.9,782.6) +- (0,256) (1,469.7) +- (0,134)};
-\addlegendentry{EPARA-style}
-\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,967.2) +- (0,51.5) (0.6,1413) +- (0,83.5) (0.8,1648) +- (0,115) (0.9,1035) +- (0,289) (1,710.3) +- (0,136)};
-\addlegendentry{TF (trust filter)}
-\addplot+[color=cTRACE, mark=diamond*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,968.1) +- (0,51.7) (0.6,1420) +- (0,84) (0.8,1698) +- (0,135) (0.9,1047) +- (0,279) (1,673.2) +- (0,176)};
-\addlegendentry{\textsc{Trace}}
-\nextgroupplot[title={(b)}, xlabel={Offered load $\rho$}, ylabel={C-SLO (per request)}]
-\addplot+[color=cLOC, mark=o, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.4216) +- (0,0.0602) (0.6,0.2914) +- (0,0.043) (0.8,0.2065) +- (0,0.0226) (0.9,0.177) +- (0,0.0272) (1,0.1517) +- (0,0.0209)};
-\addlegendentry{Local only}
-\addplot+[color=cRR, mark=triangle*, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.8147) +- (0,0.0172) (0.6,0.7666) +- (0,0.021) (0.8,0.5501) +- (0,0.047) (0.9,0.3404) +- (0,0.0667) (1,0.2263) +- (0,0.0378)};
-\addlegendentry{Round-robin}
-\addplot+[color=cEPARA, mark=*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.8229) +- (0,0.0158) (0.6,0.8103) +- (0,0.0158) (0.8,0.7075) +- (0,0.0822) (0.9,0.349) +- (0,0.102) (1,0.1897) +- (0,0.0491)};
-\addlegendentry{EPARA-style}
-\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.9857) +- (0,0.0128) (0.6,0.9606) +- (0,0.0157) (0.8,0.8407) +- (0,0.0456) (0.9,0.4647) +- (0,0.12) (1,0.2894) +- (0,0.0526)};
-\addlegendentry{TF (trust filter)}
-\addplot+[color=cTRACE, mark=diamond*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.9866) +- (0,0.0129) (0.6,0.9653) +- (0,0.0153) (0.8,0.8667) +- (0,0.0602) (0.9,0.4691) +- (0,0.114) (1,0.2735) +- (0,0.0667)};
-\addlegendentry{\textsc{Trace}}
-\legend{}
-\nextgroupplot[title={(c)}, xlabel={Offered load $\rho$}, ylabel={C-SLO (balanced)}]
-\addplot+[color=cLOC, mark=o, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.4097) +- (0,0.0577) (0.6,0.2964) +- (0,0.048) (0.8,0.2107) +- (0,0.0223) (0.9,0.1851) +- (0,0.0329) (1,0.1509) +- (0,0.0244)};
-\addlegendentry{Local only}
-\addplot+[color=cRR, mark=triangle*, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.7795) +- (0,0.0385) (0.6,0.7535) +- (0,0.0302) (0.8,0.5614) +- (0,0.037) (0.9,0.3925) +- (0,0.0677) (1,0.2801) +- (0,0.0313)};
-\addlegendentry{Round-robin}
-\addplot+[color=cEPARA, mark=*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.8131) +- (0,0.035) (0.6,0.8137) +- (0,0.025) (0.8,0.6937) +- (0,0.0559) (0.9,0.4183) +- (0,0.0893) (1,0.2753) +- (0,0.0391)};
-\addlegendentry{EPARA-style}
-\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.9779) +- (0,0.0161) (0.6,0.9574) +- (0,0.0213) (0.8,0.8116) +- (0,0.0487) (0.9,0.5447) +- (0,0.101) (1,0.3961) +- (0,0.0553)};
-\addlegendentry{TF (trust filter)}
-\addplot+[color=cTRACE, mark=diamond*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.9849) +- (0,0.015) (0.6,0.9649) +- (0,0.0172) (0.8,0.8411) +- (0,0.0427) (0.9,0.5493) +- (0,0.0937) (1,0.3894) +- (0,0.0625)};
-\addlegendentry{\textsc{Trace}}
-\legend{}
-\nextgroupplot[title={(d)}, xlabel={Offered load $\rho$}, ylabel={Violation rate}]
-\addplot+[color=cLOC, mark=o, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.1656) +- (0,0.0183) (0.6,0.1657) +- (0,0.0183) (0.8,0.1658) +- (0,0.019) (0.9,0.1658) +- (0,0.0188) (1,0.1653) +- (0,0.0185)};
-\addlegendentry{Local only}
-\addplot+[color=cRR, mark=triangle*, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.1788) +- (0,0.0159) (0.6,0.1912) +- (0,0.0187) (0.8,0.1953) +- (0,0.0131) (0.9,0.2014) +- (0,0.0136) (1,0.204) +- (0,0.0141)};
-\addlegendentry{Round-robin}
-\addplot+[color=cEPARA, mark=*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0.1768) +- (0,0.0158) (0.6,0.1878) +- (0,0.0161) (0.8,0.2005) +- (0,0.0158) (0.9,0.1999) +- (0,0.0198) (1,0.1958) +- (0,0.0184)};
-\addlegendentry{EPARA-style}
-\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0) +- (0,0) (0.6,0) +- (0,0) (0.8,0) +- (0,0) (0.9,0) +- (0,0) (1,0) +- (0,0)};
-\addlegendentry{TF (trust filter)}
-\addplot+[color=cTRACE, mark=diamond*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.4,0) +- (0,0) (0.6,0) +- (0,0) (0.8,0) +- (0,0) (0.9,0) +- (0,0) (1,0) +- (0,0)};
-\addlegendentry{\textsc{Trace}}
-\legend{}
-\end{groupplot}
-\node at ($(group c1r1.north west)!0.5!(group c4r1.north east)+(0,0.75cm)$) {\pgfplotslegendfromname{leg:load}};
-\end{tikzpicture}
-% --- end inline ---
-}
-\caption{Routing under increasing offered load (30 servers, default sensitivity mix; mean and 95\% CI over 10 seeds). (a) Compliant goodput, (b) per-request and (c) category-balanced compliant SLO attainment, (d) fraction of requests served at a server that violates the trust constraint~\eqref{eq:elig}.}
-\label{fig:load}
-\end{figure*}
-
-\begin{table*}[t]
-\centering
-\caption{Routers at offered load $\rho=0.8$ (mean $\pm$ 95\% CI, 10 seeds). SLO: raw SLO attainment; C-SLO: compliant SLO attainment, per request and category-balanced; Viol.: trust-violation rate; C-goodput: compliant goodput (req/s); Fwd.: forwards per request; $\mu$s: routing time per request in the Python prototype.}
-\label{tab:main}
-\footnotesize
-\begin{tabular}{lccccccc}
-\toprule
-Policy & SLO & C-SLO & C-SLO$_{bal}$ & Viol. & C-goodput & Fwd. & $\mu$s \\
-\midrule
-Local only & 0.253$\pm$0.025 & 0.206$\pm$0.023 & 0.211$\pm$0.022 & 0.166$\pm$0.019 & 407$\pm$57 & 0.00$\pm$0.00 & 0.0$\pm$0.0 \\
-Round-robin & 0.678$\pm$0.058 & 0.550$\pm$0.047 & 0.561$\pm$0.037 & 0.195$\pm$0.013 & 1078$\pm$99 & 1.25$\pm$0.08 & 1.5$\pm$0.1 \\
-RR, shared pointer (ref.) & 0.720$\pm$0.043 & 0.574$\pm$0.033 & 0.582$\pm$0.023 & 0.203$\pm$0.016 & 1123$\pm$66 & 1.16$\pm$0.08 & 0.9$\pm$0.1 \\
-EPARA-style & 0.883$\pm$0.110 & 0.708$\pm$0.082 & 0.694$\pm$0.056 & 0.200$\pm$0.016 & 1391$\pm$187 & 0.80$\pm$0.15 & 17.3$\pm$3.2 \\
-TF (trust filter) & 0.841$\pm$0.046 & 0.841$\pm$0.046 & 0.812$\pm$0.049 & 0.000$\pm$0.000 & 1648$\pm$115 & 0.83$\pm$0.07 & 30.3$\pm$2.7 \\
-\textbf{\sys{} (TF+best-fit)} & \textbf{0.867}$\pm$0.060 & \textbf{0.867}$\pm$0.060 & \textbf{0.841}$\pm$0.043 & \textbf{0.000}$\pm$0.000 & \textbf{1698}$\pm$135 & 0.78$\pm$0.10 & 31.9$\pm$3.6 \\
-TF+EW (energy wt.) & 0.812$\pm$0.055 & 0.812$\pm$0.055 & 0.808$\pm$0.040 & 0.000$\pm$0.000 & 1590$\pm$108 & 0.91$\pm$0.11 & 36.7$\pm$4.3 \\
+\(\mathcal N\), \(N\) & set and number of edge servers \\
+\(S_j\) & GPU slots (MPS partitions) of server \(j\) \\
+\(c_j\), \(d_j\) & clearance level and trust domain of server \(j\) \\
+\(\ell_{ij}\); \(S_\mathrm{cl}\), \(\ell_\mathrm{cl}\) & latency between \(i\) and \(j\); cloud slots and latency \\
+\(P_s\), \(\kappa_j\), \(\bar P_j\) & slot power, supply fraction, mean supply \\
+\(E_j(t)\), \(B_j\); \(\Phi\) & energy buffer level and capacity; supply ratio, Eq. (1) \\
+\(o_r\), \(a_r\), \(l_r\), \(s_r\) & ingress server, arrival time, service and sensitivity of \(r\) \\
+\(m_l\), \(\tau_l\), \(\mathrm{SLO}_l\) & slots, service time and SLO of service \(l\) \\
+\(\mathrm{elig}(r,j)\) & trust eligibility, Eq. (2) \\
+\(y_r\), \(v_r\) & SLO met; trust violation \\
+\(\lambda\) & share of requests whose ingress clearance covers their sensitivity \\
+\(\hat\sigma_{ij}\), \(\hat h_{ij}\) & \(i\)'s view of \(j\)'s spare slots and energy headroom \\
+\(H\), \(\Delta\) & state-sync period; capacity horizon \\
+\(w_{ij}(r)\) & offload weight, Eq. (5) \\
+\(\gamma\), \(q^\ast\), \(\hat q_i\) & best-fit strength, enabling threshold, local sensitive-share estimate \\
+\(K_{\max}\) & maximum forwards per request \\
 \bottomrule
 \end{tabular}
 \end{table*}
 
-\subsection{Cost of compliance and the value of best-fit clearance}\label{sec:res-privacy}
+\section{Design of TRACE}
 
-Fig.~\ref{fig:privacy} varies the share of sensitive requests at $\rho=0.8$. The EPARA-style router's raw SLO attainment is unaffected by sensitivity (0.883 throughout) because it ignores it, but its violation rate grows linearly to 41\% when 80\% of requests are sensitive, so its compliant SLO falls from 0.883 to 0.523. Enforcing the constraint has a real cost: as sensitive traffic grows, the pool of eligible servers shrinks, and TF's raw (= compliant) SLO falls from 0.883 to 0.572. Even so, TF delivers more compliant service than the unconstrained router at every non-zero sensitive share, significantly so at 20--60\% ($+0.071$ to $+0.142$, $p\le0.037$).
-
-Best-fit clearance targets exactly this regime. It improves compliant SLO over TF by $+0.027\pm0.015$ ($p=0.006$) at 40\% and $+0.051\pm0.024$ ($p=0.002$) at 60\% sensitive traffic. At 80\%, almost all traffic needs high clearance and there is little capacity left to reserve, so the gain shrinks ($+0.022$, $p=0.19$). With no sensitive traffic, best-fit only concentrates load on low-clearance servers and costs $-0.036$ (not significant, $p=0.084$). Table~\ref{tab:gamma} shows that at 60\% sensitive traffic any $\gamma\le0.3$ captures the benefit ($+0.051$ to $+0.055$ over $\gamma=1$, $p=0.002$). The gains in the category-balanced metric are smaller and not significant ($+0.015$ to $+0.025$), indicating that best-fit mainly helps the numerous short classification requests. In deployment, best-fit should therefore be enabled when a substantial share of traffic---roughly 30\% or more in our setting---is sensitive; the share is directly observable by each server.
-
-\begin{figure}[t]
+\begin{figure*}[!t]
 \centering
-\resizebox{\columnwidth}{!}{%
-% --- begin inline: gen/fig_privacy.tex (generated from the experiment data) ---
-\begin{tikzpicture}
-\begin{groupplot}[group style={group size=2 by 1, horizontal sep=1.25cm},
-  width=4.6cm, height=3.7cm, grid=major, grid style={gray!20},
-  tick label style={font=\scriptsize}, label style={font=\scriptsize}, ylabel shift=-2pt,
-  title style={font=\scriptsize, yshift=-1ex}, every axis plot/.append style={},
-  legend style={font=\scriptsize, draw=none, column sep=6pt}, cycle list name=exotic]
-\nextgroupplot[title={(a)}, xlabel={Share of sensitive requests}, ylabel={Raw SLO}, legend columns=3, legend to name=leg:privacy]
-\addplot+[color=cEPARA, mark=*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0,0.8835) +- (0,0.11) (0.2,0.8835) +- (0,0.11) (0.4,0.8835) +- (0,0.11) (0.6,0.8835) +- (0,0.11) (0.8,0.8835) +- (0,0.11)};
-\addlegendentry{EPARA-style}
-\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0,0.8835) +- (0,0.11) (0.2,0.8642) +- (0,0.0655) (0.4,0.8455) +- (0,0.0413) (0.6,0.7512) +- (0,0.0485) (0.8,0.5723) +- (0,0.108)};
-\addlegendentry{TF (trust filter)}
-\addplot+[color=cTRACE, mark=diamond*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0,0.8473) +- (0,0.0793) (0.2,0.847) +- (0,0.0895) (0.4,0.8727) +- (0,0.0396) (0.6,0.8025) +- (0,0.0446) (0.8,0.5945) +- (0,0.124)};
-\addlegendentry{\textsc{Trace}}
-\nextgroupplot[title={(b)}, xlabel={Share of sensitive requests}, ylabel={Compliant SLO}]
-\addplot+[color=cEPARA, mark=*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0,0.8835) +- (0,0.11) (0.2,0.7933) +- (0,0.0956) (0.4,0.7034) +- (0,0.082) (0.6,0.6138) +- (0,0.0688) (0.8,0.5228) +- (0,0.0575)};
-\addlegendentry{EPARA-style}
-\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0,0.8835) +- (0,0.11) (0.2,0.8642) +- (0,0.0655) (0.4,0.8455) +- (0,0.0413) (0.6,0.7512) +- (0,0.0485) (0.8,0.5723) +- (0,0.108)};
-\addlegendentry{TF (trust filter)}
-\addplot+[color=cTRACE, mark=diamond*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0,0.8473) +- (0,0.0793) (0.2,0.847) +- (0,0.0895) (0.4,0.8727) +- (0,0.0396) (0.6,0.8025) +- (0,0.0446) (0.8,0.5945) +- (0,0.124)};
-\addlegendentry{\textsc{Trace}}
-\legend{}
-\end{groupplot}
-\node at ($(group c1r1.north west)!0.5!(group c2r1.north east)+(0,0.75cm)$) {\pgfplotslegendfromname{leg:privacy}};
-\end{tikzpicture}
-% --- end inline ---
-}
-\caption{Effect of the share of sensitive requests ($\rho=0.8$). (a) Raw SLO attainment ignores violations; (b) compliant SLO counts only lawful, timely requests. Error bars are 95\% CIs across seeds; paired differences are reported in the text.}
-\label{fig:privacy}
-\end{figure}
-
-\begin{table}[t]
-\centering
-\caption{Best-fit strength $\gamma$ with 60\% sensitive requests ($\rho=0.8$, 10 seeds). $\gamma=1$ is the plain trust filter.}
-\label{tab:gamma}
-\footnotesize
-\begin{tabular}{ccc}
-\toprule
-$\gamma$ & C-SLO & C-SLO$_{bal}$\\
-\midrule
-1 (TF) & 0.751$\pm$0.049 & 0.761$\pm$0.051 \\
-0.5 & 0.790$\pm$0.057 & 0.775$\pm$0.042 \\
-0.3 (\sys) & 0.803$\pm$0.045 & 0.786$\pm$0.040 \\
-0.1 & 0.806$\pm$0.055 & 0.789$\pm$0.045 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Energy-aware routing}\label{sec:res-energy}
-
-Fig.~\ref{fig:energy} scales every server's energy cap from $1.0$ down to $0.35$ at $\rho=0.8$. The energy-weighted design does what it was meant to do locally: with unscaled caps it cuts the fraction of throttled requests from 8.4\% to 2.2\%. It does not, however, improve the quantity that matters.
-
-\textbf{Soft throttling.} No energy-aware variant significantly outperforms TF at any energy level. TF+EW is never better and is significantly worse under scarce energy ($-0.100\pm0.052$ at cap scale 0.35, $p=0.002$). The barrier variant TF+EB loses $0.03$--$0.06$. Energy-as-capacity (TF+EC) is the best variant, within $\pm0.025$ of TF at every level (all $p\ge0.43$)---in other words, statistically indistinguishable from not modeling energy at all. Applying the energy weight without the trust filter (``EW only'') is the worst policy in every setting.
-
-\textbf{Hard outage.} When drained servers go offline, every energy-aware variant is significantly worse than TF once energy is scarce (cap scale $\le0.7$, all $p=0.002$): by 0.18--0.23 for TF+EW, 0.10--0.14 for TF+EB and 0.23--0.28 for TF+EC. Energy awareness also \emph{lowers} server availability (at cap scale 0.5: 0.47 for TF vs.\ 0.40, 0.39 and 0.36) and raises drain events from 154 to 174--178 per minute.
-
-\textbf{Ablation.} Table~\ref{tab:ablation} separates the energy weight $\beta$ from the retention threshold $\theta$ at cap scale 0.5. Compliant SLO decreases monotonically with $\beta$ under both energy models (outage: 0.568 at $\beta=0$, 0.438 at $\beta=0.5$, 0.334 at $\beta=1$, 0.317 at $\beta=2$). Retention alone ($\beta=0$, $\theta=0.25$) is neutral, slightly positive under soft throttling ($0.546$ vs.\ $0.518$) and slightly negative under outage ($0.556$ vs.\ $0.568$). The configuration of our original proposal ($\beta=1$, $\theta=0.25$) is among the worst.
-
-\begin{figure*}[t]
-\centering
-\resizebox{\textwidth}{!}{%
-% --- begin inline: gen/fig_energy.tex (generated from the experiment data) ---
-\begin{tikzpicture}
-\begin{groupplot}[group style={group size=3 by 1, horizontal sep=1.4cm},
-  width=5.6cm, height=3.7cm, grid=major, grid style={gray!20},
-  tick label style={font=\scriptsize}, label style={font=\scriptsize}, ylabel shift=-2pt,
-  title style={font=\scriptsize, yshift=-1ex}, every axis plot/.append style={},
-  legend style={font=\scriptsize, draw=none, column sep=6pt}, cycle list name=exotic]
-\nextgroupplot[title={(a)}, xlabel={Energy-cap scale}, ylabel={C-SLO, soft}, x dir=reverse, legend columns=5, legend to name=leg:energy]
-\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.35,0.4193) +- (0,0.113) (0.5,0.5184) +- (0,0.132) (0.7,0.7063) +- (0,0.114) (1,0.8407) +- (0,0.0456)};
-\addlegendentry{TF (trust filter)}
-\addplot+[color=cEW, mark=triangle*, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.35,0.319) +- (0,0.0821) (0.5,0.4542) +- (0,0.101) (0.7,0.6608) +- (0,0.112) (1,0.8124) +- (0,0.0552)};
-\addlegendentry{TF+EW (energy wt.)}
-\addplot+[color=cEB, mark=x, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.35,0.3636) +- (0,0.103) (0.5,0.4785) +- (0,0.131) (0.7,0.6813) +- (0,0.109) (1,0.8076) +- (0,0.0563)};
-\addlegendentry{TF+EB (barrier)}
-\addplot+[color=cEC, mark=star, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.35,0.3993) +- (0,0.0722) (0.5,0.5077) +- (0,0.0941) (0.7,0.7316) +- (0,0.0813) (1,0.8411) +- (0,0.0491)};
-\addlegendentry{TF+EC (energy cap.)}
-\addplot+[color=cEWO, mark=pentagon*, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.35,0.2176) +- (0,0.0405) (0.5,0.3044) +- (0,0.056) (0.7,0.5328) +- (0,0.102) (1,0.7198) +- (0,0.0423)};
-\addlegendentry{EW only (no TF)}
-\nextgroupplot[title={(b)}, xlabel={Energy-cap scale}, ylabel={C-SLO, outage}, x dir=reverse]
-\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.35,0.4337) +- (0,0.0273) (0.5,0.5676) +- (0,0.048) (0.7,0.7087) +- (0,0.0335) (1,0.8176) +- (0,0.0338)};
-\addlegendentry{TF (trust filter)}
-\addplot+[color=cEW, mark=triangle*, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.35,0.2361) +- (0,0.0238) (0.5,0.3343) +- (0,0.0502) (0.7,0.5264) +- (0,0.0754) (1,0.7979) +- (0,0.0615)};
-\addlegendentry{TF+EW (energy wt.)}
-\addplot+[color=cEB, mark=x, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.35,0.3132) +- (0,0.0348) (0.5,0.4253) +- (0,0.0511) (0.7,0.6091) +- (0,0.0649) (1,0.8042) +- (0,0.0596)};
-\addlegendentry{TF+EB (barrier)}
-\addplot+[color=cEC, mark=star, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.35,0.2064) +- (0,0.032) (0.5,0.285) +- (0,0.0602) (0.7,0.4361) +- (0,0.0575) (1,0.7764) +- (0,0.0735)};
-\addlegendentry{TF+EC (energy cap.)}
-\addplot+[color=cEWO, mark=pentagon*, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.35,0.1674) +- (0,0.00971) (0.5,0.234) +- (0,0.0351) (0.7,0.3468) +- (0,0.036) (1,0.6499) +- (0,0.0696)};
-\addlegendentry{EW only (no TF)}
-\legend{}
-\nextgroupplot[title={(c)}, xlabel={Energy-cap scale}, ylabel={Availability}, x dir=reverse]
-\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.35,0.3069) +- (0,0.0242) (0.5,0.4709) +- (0,0.0383) (0.7,0.6836) +- (0,0.0331) (1,0.8809) +- (0,0.0286)};
-\addlegendentry{TF (trust filter)}
-\addplot+[color=cEW, mark=triangle*, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.35,0.2056) +- (0,0.0112) (0.5,0.3976) +- (0,0.0288) (0.7,0.6501) +- (0,0.0425) (1,0.904) +- (0,0.0271)};
-\addlegendentry{TF+EW (energy wt.)}
-\addplot+[color=cEB, mark=x, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.35,0.2211) +- (0,0.0238) (0.5,0.3852) +- (0,0.0361) (0.7,0.6464) +- (0,0.0402) (1,0.8981) +- (0,0.0272)};
-\addlegendentry{TF+EB (barrier)}
-\addplot+[color=cEC, mark=star, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.35,0.2079) +- (0,0.0242) (0.5,0.3641) +- (0,0.0482) (0.7,0.6147) +- (0,0.0401) (1,0.8715) +- (0,0.0335)};
-\addlegendentry{TF+EC (energy cap.)}
-\addplot+[color=cEWO, mark=pentagon*, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.35,0.1939) +- (0,0.0143) (0.5,0.3768) +- (0,0.0373) (0.7,0.6079) +- (0,0.0467) (1,0.8713) +- (0,0.0267)};
-\addlegendentry{EW only (no TF)}
-\legend{}
-\end{groupplot}
-\node at ($(group c1r1.north west)!0.5!(group c3r1.north east)+(0,0.75cm)$) {\pgfplotslegendfromname{leg:energy}};
-\end{tikzpicture}
-% --- end inline ---
-}
-\caption{Energy-aware variants as every server's energy cap is scaled down ($\rho=0.8$). (a) Compliant SLO under soft throttling; (b) compliant SLO and (c) mean server availability under the hard-outage model. The x-axis runs from abundant to scarce energy.}
-\label{fig:energy}
+\includegraphics[width=\textwidth]{figures/fig_arch.png}
+\caption{Overview of TRACE. Left: edge servers carry a clearance level \(c\) and a trust domain \(d\) (fill colour) and synchronize state over a ring every \(H\) seconds; the cloud tier performs periodic placement and serves as a fallback for requests of sensitivity at most 1. A request may only be processed at an eligible server (green); processing a sensitivity-2 request at a clearance-0 server is blocked (red). Ingress servers relay ciphertext only. Right: the per-request decision path executed by every server.}
+\label{fig:1}
 \end{figure*}
 
-\begin{table}[t]
+Fig. 1 illustrates the overall design. TRACE replaces EPARA's request handler; the category profiles and the placement of services are treated as fixed. Each server \(i\) maintains a view of every peer \(j\) with two items: the number of spare slots \(\hat\sigma_{ij}\) over a horizon \(\Delta=0.5\) s, and whether the peer is currently online. This information is taken from the last ring synchronization and debited by the offloads that server \(i\) has performed since then.
+
+\subsection{Trust-filtered, capacity-proportional offloading}
+
+When server \(i\) (the ingress server or a forwarder) receives a request \(r\), it processes the request locally if all of the following conditions hold: \(i\) is eligible, \(i\) is currently online, \(i\) hosts \(l_r\), and \(i\) can meet the SLO. If any of these conditions does not hold, server \(i\) selects a peer \(j\) with probability proportional to
+
+\begin{equation}
+w_{ij}(r)=\mathrm{elig}(r,j)\cdot\phi(\hat\sigma_{ij},m_{l_r})\cdot\frac{1}{1+\ell_{ij}/\ell_0}\cdot\gamma_i^{\,\max(0,\,c_j-s_r)}
+\end{equation}
+
+where \(\phi(\sigma,m)=\sigma\) if \(\sigma\ge m\) and \(0.05\,\sigma\) otherwise (a preference for peers on which the request fits), \(\ell_0=20\) ms, and a peer \(j\) is excluded from consideration if it has already been visited by this request or does not host \(l_r\). A request is forwarded at most \(K_{\max}=2\) times. Rather than always selecting the peer with the largest weight, we sample from the candidate peers; in doing so, the router remains robust to stale views \cite{mitzenmacher2000old}. Without the final factor (\(\gamma_i=1\)), (5) is the trust filter (TF).
+
+\subsection{Adaptive best-fit clearance}
+
+Non-sensitive requests that run on high-clearance servers consume the only capacity that sensitive requests are allowed to use. The final factor in (5), with \(\gamma_i<1\), makes a request prefer the \emph{lowest} clearance that suffices rather than any eligible server; the fragmentation argument for best-fit bin packing applies here as well. Best-fit only pays when there is significant sensitive traffic, and it loses SLO attainment when there is little sensitive traffic, because it concentrates non-sensitive load on low-clearance servers. Therefore, TRACE turns it on and off as needed: each server keeps an exponentially weighted estimate \(\hat q_i\) of the share of sensitive requests it receives (weight 0.002 per request, a memory of a few seconds) and uses \(\gamma_i=\gamma\) if \(\hat q_i\ge q^\ast\) and \(\gamma_i=1\) otherwise. Both \(\gamma=0.3\) and \(q^\ast=30\%\) were chosen on tuning seeds that are separate from the evaluation seeds (Section V).
+
+\subsection{SLO-aware admission and cloud fallback}
+
+If no eligible peer remains, or \(K_{\max}\) has been reached, and the request cannot meet its SLO at the current server, TRACE sends the request to the cloud if the cloud is eligible and can meet the SLO; otherwise, it sheds the request (rejects it immediately, so the client may choose to retry or degrade). Executing such a request late would take up slots without adding goodput and would delay the requests queued behind it. We show in Section VI-D that this rule, which we apply to every router in our main experiments so that the comparison is fair, removes the collapse of capacity-aware routing at saturation.
+
+\textbf{Algorithm 1: TRACE request handling at server \(i\)} (input: request \(r\), visited set \(V\), forward count \(k\))
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  If \(\mathrm{elig}(r,i)\), \(i\) is online, hosts \(l_r\) and the SLO is feasible at \(i\): process \(r\) at \(i\) and return.
+\item
+  If \(k<K_{\max}\): compute \(w_{ij}(r)\) by (5) for all \(j\notin V\); if \(\sum_j w_{ij}>0\), sample \(j\sim w_{ij}/\sum_{j'}w_{ij'}\), debit \(\hat\sigma_{ij}\), forward \(r\) to \(j\) with \(V\cup\{j\}\) and \(k+1\), and return.
+\item
+  If the cloud is eligible for \(r\) and can meet the SLO: send \(r\) to the cloud and return.
+\item
+  Shed \(r\).
+\end{enumerate}
+
+\textbf{Computational complexity and state.} The cost of one decision is \(O(N)\) arithmetic on the local view, and no communication occurs. Each server keeps a few bytes of synchronized state per peer (spare slots, online status and an estimated backlog); clearance and domain labels are static and exchanged only once, at attestation. A ring synchronization therefore moves \(O(N)\) bytes per server per period, about 1.2 kB per hop for \(N=120\) servers and \(H=1\) s. Latency, not volume, limits scale: one circulation of the ring takes \(N\) hops, roughly 1.5 s for \(N=120\) servers under our latency model, so views become older as \(N\) grows. Our simulator synchronizes all views instantaneously every \(H\) seconds and studies staleness through \(H\) (Section VI-E); for large \(N\), gossip or tree-based dissemination would be needed.
+
+\subsection{Energy-aware variants (hypotheses tested in Section VII)}
+
+We test whether the offload score should consider the energy headroom \(\hat h_{ij}=E_j/B_j\) (from the last synchronization) by evaluating five extensions of TF. \textbf{EW} multiplies (5) by \(\hat h_{ij}^{\beta}\) (\(\beta=1\)) and hands a request off a server whose own headroom falls below \(\theta=0.25\) when its SLO slack exceeds 50 ms and a peer with headroom above 0.5 fits; \textbf{EB} uses a barrier weight \(\min\{1,\max(0.05,\hat h_{ij}/0.3)\}\); \textbf{EC} treats energy as a capacity dimension, replacing \(\hat\sigma_{ij}\) by \(\min(\hat\sigma_{ij},\hat e_{ij})\), where \(\hat e_{ij}\) is the number of slots that \(j\)'s energy can power over the horizon; \textbf{EW-bounded} multiplies (5) by \((1+\hat h_{ij})/2\in[0.5,1]\), so that energy can only deprioritize, never exclude, a peer, and does no hand-off; and \textbf{EF} is a feasibility oracle that uses the true, current buffer of every server and excludes a server (including the local one) only if it cannot power the job without throttling or outage, with no preference among feasible servers.
+
+\section{Evaluation Methodology}
+
+\textbf{Simulator.} We extended our lightweight event-driven simulator (Python/NumPy). It implements the full routing logic for each request, but models computation and transmission through service-time and latency tables, the technique EPARA employs for its large-scale study \cite{epara2025}. We do not model EPARA's operators: each class has a fixed number of slots and a fixed service time after operator selection, so batching benefits and co-location interference are not modelled. Unless otherwise specified, every server offers all services (full replication); Section VI-F also evaluates partial placement. All parameters (Table II) are assumptions based on the scale of EPARA's P100 testbed, not measurements, so the absolute numbers are not directly comparable to EPARA's. The simulator, experiment scripts and raw results are available at https://github.com/gaurav3611/edge-cloud-ai-routing.
+
+\textbf{Decoupling trust and energy.} When servers are energy-capped below the offered load, energy scarcity lowers every router's SLO attainment and masks the impact of the trust constraint. As a result, the trust experiments (Section VI) are carried out with unconstrained energy, and the impact of energy is examined on its own in Section VII, where the supply ratio \(\Phi\) of Eq. (1) is controlled explicitly.
+
+\begin{table*}[!t]
 \centering
-\caption{Energy ablation for TF+EW at cap scale 0.5, $\rho=0.8$ (10 seeds): energy weight $\beta$ and retention threshold $\theta$. $\beta=\theta=0$ is TF.}
-\label{tab:ablation}
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{cc|cc|ccc}
+\caption{Simulation parameters (defaults; ranges studied in parentheses).}
+\footnotesize
+\begin{tabular}{@{}p{0.3\linewidth}p{0.66\linewidth}@{}}
 \toprule
- & & \multicolumn{2}{c|}{Soft throttling} & \multicolumn{3}{c}{Hard outage}\\
-$\beta$ & $\theta$ & Compl. SLO & Throttled & Compl. SLO & Throttled & Avail. \\
+Parameter & Value \\
 \midrule
-0 & 0 & 0.518$\pm$0.132 & 0.222$\pm$0.068 & 0.568$\pm$0.048 & 0.022$\pm$0.004 & 0.47$\pm$0.04 \\
-0 & 0.25 & 0.546$\pm$0.136 & 0.220$\pm$0.069 & 0.556$\pm$0.034 & 0.018$\pm$0.005 & 0.47$\pm$0.04 \\
-0.5 & 0 & 0.513$\pm$0.119 & 0.236$\pm$0.055 & 0.438$\pm$0.044 & 0.016$\pm$0.006 & 0.38$\pm$0.04 \\
-1 & 0 & 0.469$\pm$0.111 & 0.209$\pm$0.052 & 0.334$\pm$0.043 & 0.011$\pm$0.005 & 0.39$\pm$0.05 \\
-1 & 0.25 & 0.454$\pm$0.101 & 0.200$\pm$0.047 & 0.334$\pm$0.050 & 0.010$\pm$0.002 & 0.40$\pm$0.03 \\
-1 & 0.4 & 0.463$\pm$0.109 & 0.206$\pm$0.051 & 0.346$\pm$0.048 & 0.009$\pm$0.002 & 0.39$\pm$0.04 \\
-2 & 0.25 & 0.409$\pm$0.081 & 0.177$\pm$0.029 & 0.317$\pm$0.045 & 0.007$\pm$0.002 & 0.37$\pm$0.05 \\
+Servers \(N\) & 30 (10--120) \\
+GPUs per server; slots & 2 or 4 (uniform); 4 slots per GPU \\
+Clearance \(c_j\) & 0/1/2 w.p. 0.30/0.40/0.30 (also 0.5/0.3/0.2 and 0.2/0.4/0.4) \\
+Trust domains & 3, uniform (1, 2, 5) \\
+Network latency & 2 ms + 20 ms × distance (unit square) \\
+Sensitivity mix \(s_r\) & 0/1/2 w.p. 0.60/0.24/0.16 (sensitive share 0--80\%, split 3:2) \\
+Origin--sensitivity alignment \(\lambda\) & 0 (0, 0.5, 1) \\
+LS\textless1 (classification) & 1 slot, 30 ms, SLO 150 ms, 20\% of demand \\
+LS\textgreater1 (LLM chat) & 8 slots, 800 ms, SLO 3 s, 30\% \\
+FS\textless1 (video detection) & 2 slots, stream 5--15 s, start SLO 200 ms, 30\% \\
+FS\textgreater1 (video segmentation) & 8 slots, stream 5--10 s, start SLO 300 ms, 20\% \\
+Arrivals & Poisson; log-normal ingress hot spots; ±80\% sinusoidal bursts, period 20 s \\
+Sync period \(H\); horizon \(\Delta\) & 1 s (0.1--2 s); 0.5 s (0.1--1 s) \\
+\(K_{\max}\); \(\ell_0\); fit factor & 2 (1--4); 20 ms (5--80 ms); 0.05 (0--1) \\
+Best-fit \(\gamma\); threshold \(q^\ast\) & 0.3; 30\% (tuned on separate seeds) \\
+Cloud tier (Sec. VI-F) & 96 slots, 40 ms one-way, clearance 1, no domain \\
+Slot power \(P_s\) & 60 W (250 W GPU / 4) \\
+Supply fraction \(\kappa_j\) & 0.45/0.70/1.0 w.p. 0.35/0.35/0.30, rescaled to the target \(\Phi\) \\
+Supply profile & constant, or solar: period 120 s, amplitude 1, three phases \\
+Buffer \(B_j\); initial charge & 120 s of mean supply (20 s, 600 s); uniform 20--100\% \\
+Run length; seeds & trust: 60 s (10 s warm-up), 30 seeds; energy: 180 s (60 s warm-up), 10 seeds \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
+\end{table*}
+
+\textbf{Load.} The offered load \(\rho\) is the demanded slot-seconds per second divided by the total number of slots. Shares of demand are measured in slot-seconds; by request count, classification requests are close to 99\% of all requests, which is why we present the category-balanced metric.
+
+\textbf{Routers.} \emph{Trust-oblivious references:} local only; decentralized round-robin (RR), an InterEdge-style baseline \cite{interedge}; EPARA-style capacity-proportional offloading, i.e., (5) without the trust and best-fit factors; and a \emph{centralized oracle} that forwards every request, with perfect instantaneous knowledge of every server's slot occupancy, to the server with the earliest finish time (no hop limit). \emph{Compliant routers:} TF; TRACE; TF-RR (round-robin over eligible peers); TF-P2C (power of two choices \cite{mitzenmacher2001two}: two eligible peers sampled uniformly, forward to the one with the smaller synchronized backlog); TF-JSQ (join-the-shortest-queue \cite{winston1977}: the eligible peer with the smallest synchronized backlog plus latency); \emph{static pools}, the partitioning a practitioner would deploy, in which a request may only be processed by servers whose clearance equals its sensitivity (and, for sensitivity 2, within its domain), with capacity-proportional offloading inside the pool; and the \emph{centralized oracle with trust}, which restricts the oracle to eligible servers and, among those that meet the SLO, prefers the least sufficient clearance. The oracles are strong references, not proven optima: greedy earliest-finish dispatch has no look-ahead. All routers share the same admission rule (Section IV-C), category profiles, topology and arrival sequence for a given seed.
+
+\textbf{Metrics.} We present raw and compliant SLO attainment (per request and category-balanced), compliant goodput, violation rate, forwards and shed requests per request, and routing time per decision. For energy, we also report the throttled fraction, server availability (outage model), the coefficient of variation (CV) of per-server utilization and availability, and energy per successful request.
+
+\textbf{Seeds, run length and statistics.} The trust experiments use 30 evaluation seeds (20 for the staleness and placement studies, and 10 for the parameter-sensitivity and scale experiments); each seed generates a new topology and arrival sequence. Runs last 60 s with a 10 s warm-up, covering three 20 s burst cycles. Energy experiments use 10 seeds and 180 s runs with a 60 s warm-up and a random initial charge, so that measurements start after the initial transient. \(\gamma\) and \(q^\ast\) were chosen on 10 separate tuning seeds (1001--1010) that are never used for evaluation. We report means with 95\% Student-t confidence intervals over seeds. Differences are paired over seeds and tested with the Wilcoxon signed-rank test; we declare a family of tests for each experiment and correct within it with Holm's method \cite{holm1979}, reporting Holm-adjusted \(p\)-values (\(p_H\)). With 30 seeds the smallest two-sided \(p\) possible is about \(2\times10^{-9}\), so corrected tests have power. To separate the effects of topology and workload, a variance-decomposition experiment runs 5 arrival sequences on each of 10 topologies.
+
+\section{Results: Trust-Constrained Routing}
+
+Unless stated otherwise, results are for \(N=30\) servers, offered load \(\rho=0.8\), 40\% sensitive traffic and unconstrained energy; \(\Delta\) denotes a paired difference in compliant SLO attainment (C-SLO) over seeds, with its 95\% confidence interval and Holm-adjusted \(p\)-value \(p_H\).
+
+\subsection{Compliant routers and the cost of compliance}
+
+Fig. 2 and Table III summarize the load sweep. Among the decentralized routers that never violate the constraint, TRACE attains the highest C-SLO at every load from 0.5 to 1.2 (tied with TF-JSQ at 0.5 and 0.8); only the centralized oracle with trust, which has perfect information, does better below saturation. At \(\rho=0.8\) it reaches 0.960 ± 0.006. The trust filter alone (TF) reaches 0.950, so best-fit clearance adds 1.0 point (\(\Delta=+0.010\pm0.003\), \(p_H=10^{-6}\)); this is a small but consistent gain. Among the decentralized baselines, TF-JSQ comes closest (0.956) and is statistically indistinguishable from TRACE at this load (\(\Delta=+0.004\pm0.003\), \(p_H=0.08\)), followed by TF-P2C (0.929) and TF-RR (0.870). The difference between the three decentralized alternatives lies in how much they forward and shed: round-robin ignores capacity and sheds 13\% of requests, P2C compares only two random peers, and the synchronized backlog that JSQ minimizes is a good signal below saturation. Static pools, the partitioning a practitioner might deploy by default, attain only 0.673: non-sensitive requests, which are 60\% of the traffic, are confined to the 30\% of servers with clearance 0, and those servers are overloaded while the rest of the fleet has spare capacity.
+
+The cost of compliance is small when the router is good. A centralized oracle with perfect, fresh information attains a raw SLO of 1.000 without the constraint and 0.988 with it, so complying costs 1.2 points (\(\Delta=0.012\pm0.004\)). The equivalent comparison for decentralized routing, the EPARA-style router's raw SLO (0.986) against TRACE, gives 2.7 points (\(\Delta=0.027\pm0.006\)). TRACE is 2.9 points below the compliant oracle (\(\Delta=0.029\pm0.005\)). The EPARA-style router processes 19.9\% of its requests at ineligible servers, within the range that Eq. (4) and the random-destination bound predict (18.4\% to 21.6\%), so only 0.788 of its requests are both timely and lawful. Local-only service sheds 43\% of requests at this load; among the requests it does process, 18.7\% are violations, matching Eq. (4). Measured as compliant goodput, TRACE delivers 1868 requests/s against 1533 for the EPARA-style router, but we stress that this comparison mixes a feasible and an infeasible solution of (3); the informative numbers are the comparisons among compliant routers and the cost of compliance.
+
+The category-balanced metric (Fig. 2b) gives the same ordering, with one exception: TF-JSQ is 1.0 point ahead of TRACE at \(\rho=0.8\) (\(p_H=0.002\)), and the two are tied at \(\rho=1.0\) and 1.2.
+
+At and beyond saturation the ranking separates. At \(\rho=1.0\), TRACE (0.895) leads TF (0.875), TF-JSQ and TF-P2C (both 0.814) and TF-RR (0.752), all with \(p_H<10^{-5}\). At \(\rho=1.2\), TRACE (0.733) leads TF-P2C (0.651), TF-RR (0.633) and TF-JSQ (0.590) (\(p_H<10^{-7}\)), while its lead over TF (0.719) is no longer significant (\(p_H=0.08\)). JSQ degrades most, consistent with the herding that deterministic choices on shared, stale information cause and that sampling avoids \cite{mitzenmacher2000old}. In overload, TRACE also exceeds the compliant oracle (0.859 at \(\rho=1.0\), 0.503 at \(\rho=1.2\)). The oracle accepts every request that it can still serve in time, including eight-slot jobs that crowd out many short ones; its greedy dispatch has no admission policy, so it is a strong reference below saturation but not an upper bound above it.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_load.png}
+\caption{Routing under increasing offered load (30 servers, 40\% sensitive traffic; mean and 95\% CI over 30 seeds). (a) Compliant SLO attainment and (b) its category-balanced version for compliant routers and references; (c) raw SLO attainment; (d) violation rate of trust-oblivious routers. Dashed lines are centralized oracles.}
+\label{fig:2}
+\end{figure*}
+
+\begin{table*}[!t]
+\centering
+\caption{Routers at offered load \(\rho=0.8\) (mean ± 95\% CI over 30 seeds). SLO: raw SLO attainment; C-SLO: compliant SLO attainment, per request and category-balanced; Viol.: violation rate; C-goodput: compliant goodput (req/s); Fwd.: forwards per request; Shed: share of requests shed; µs/dec.: routing time per decision in the Python prototype.}
+\footnotesize
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lllllllll}
+\toprule
+Policy & SLO & C-SLO & C-SLO\_bal & Viol. & C-goodput & Fwd. & Shed & µs/dec. \\
+\midrule
+Local only & 0.574±0.015 & 0.466±0.013 & 0.450±0.011 & 0.107±0.007 & 907±31 & 0.00 & 0.426 & 0.0 \\
+Round-robin & 0.931±0.005 & 0.743±0.009 & 0.694±0.008 & 0.188±0.007 & 1445±37 & 0.76 & 0.069 & 2.8 \\
+EPARA-style & 0.986±0.001 & 0.788±0.007 & 0.744±0.011 & 0.199±0.007 & 1533±40 & 0.60 & 0.014 & 16.4 \\
+Central oracle (no trust) & 1.000±0.000 & 0.802±0.008 & 0.788±0.009 & 0.197±0.008 & 1562±42 & 0.43 & 0.000 & 0.0 \\
+TF-RR & 0.870±0.009 & 0.870±0.009 & 0.825±0.010 & 0.000±0.000 & 1694±43 & 0.88 & 0.130 & 3.5 \\
+TF-P2C & 0.929±0.009 & 0.929±0.009 & 0.890±0.009 & 0.000±0.000 & 1808±46 & 0.78 & 0.071 & 16.6 \\
+TF-JSQ & 0.956±0.007 & 0.956±0.007 & 0.918±0.007 & 0.000±0.000 & 1861±47 & 0.68 & 0.044 & 9.3 \\
+Static pools & 0.673±0.039 & 0.673±0.039 & 0.704±0.032 & 0.000±0.000 & 1311±82 & 1.02 & 0.327 & 14.4 \\
+TF & 0.950±0.007 & 0.950±0.007 & 0.899±0.009 & 0.000±0.000 & 1848±46 & 0.65 & 0.050 & 16.0 \\
+TRACE & 0.960±0.006 & 0.960±0.006 & 0.908±0.009 & 0.000±0.000 & 1868±47 & 0.63 & 0.040 & 18.3 \\
+Central oracle (trust) & 0.988±0.005 & 0.988±0.005 & 0.980±0.006 & 0.000±0.000 & 1924±51 & 0.83 & 0.012 & 0.0 \\
+RR, shared pointer & 0.933±0.006 & 0.744±0.008 & 0.694±0.008 & 0.190±0.007 & 1447±35 & 0.77 & 0.067 & 2.5 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table*}
+
+\subsection{Share of sensitive traffic and adaptive best-fit clearance}
+
+Fig. 3 varies the share of sensitive requests from 0 to 80\%. The cost of compliance grows with the sensitive share because the set of eligible servers shrinks: the compliant oracle falls from 0.998 to 0.896, and the gap to the unconstrained oracle grows from 0.2 to 10.4 points. TRACE follows the same trend from 0.986 to 0.854 and stays 1.2 to 4.5 points below the compliant oracle.
+
+Best-fit clearance helps exactly where the analysis of Section IV-B predicts. Its gain over TF is zero at 0\% and 20\% sensitive traffic and grows to +1.0, +2.2 and +2.4 points at 40\%, 60\% and 80\% (all \(p_H<2\times10^{-6}\)), and the category-balanced gains are similar (+0.9 to +1.9 points). When best-fit is always on, it costs 1.3 points with no sensitive traffic (\(p_H=2\times10^{-8}\)). The adaptive rule removes this cost: TRACE is indistinguishable from TF at 0\% and 20\% (\(p_H=1\)) and identical to always-on best-fit from 40\% upward. The parameters of the rule were fixed beforehand on separate tuning seeds (Table IV): \(\gamma=0.3\) had the largest mean gain across sensitive shares, and the gain changed sign between 20\% and 40\%, which gave the threshold \(q^\ast=30\%\). These evaluation results, on different seeds, confirm the choice.
+
+Static pools behave in the opposite way. With little sensitive traffic, most requests compete for the few clearance-0 servers, and static pools collapse (0.156 at 0\%, 0.409 at 20\%). When most traffic is sensitive, the pools match the traffic and static partitioning becomes competitive: at 60\% and 80\% sensitive traffic it is statistically tied with TRACE (\(\Delta=+0.032\), \(p_H=1\), and \(\Delta=-0.017\), \(p_H=0.19\)). Adaptive routing is therefore most valuable when the sensitive share is unknown or changes over time.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_sens.png}
+\caption{Effect of the share of sensitive requests (\(\rho=0.8\), 30 seeds). (a) Raw and (b) compliant SLO attainment; (c) paired gain of adaptive best-fit (TRACE) and of always-on best-fit over the plain trust filter.}
+\label{fig:3}
+\end{figure*}
+
+\begin{table*}[!t]
+\centering
+\caption{Tuning of best-fit strength \(\gamma\) on the separate tuning seeds (1001--1010): mean paired gain in C-SLO over \(\gamma=1\) (plain TF) for each share of sensitive traffic (\(\rho=0.8\)).}
+\footnotesize
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lllllll}
+\toprule
+γ & 0\% & 20\% & 40\% & 60\% & 80\% & mean \\
+\midrule
+0.5 & -0.004 & +0.005 & +0.008 & +0.016 & +0.007 & +0.0062 \\
+0.3 & -0.012 & -0.000 & +0.012 & +0.018 & +0.016 & +0.0066 \\
+0.1 & -0.045 & -0.016 & +0.010 & +0.025 & +0.027 & +0.0001 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table*}
+
+\subsection{When sensitive data originates at high-clearance sites}
+
+The violation rate of a trust-oblivious router is set by the label distributions (Section III-E). Fig. 4 tests how much of it remains when sensitive data originates where it may be processed. With full alignment (\(\lambda=1\)), local-only service causes no violations, as Eq. (4) predicts, but offloading still does: the EPARA-style router violates for 13.5\% of requests and the unconstrained oracle for 9.9\%, because a sensitive request that cannot be served at its ingress server is offloaded to whichever peer has capacity, eligible or not. The violation rate therefore falls only from 19.9\% to 13.5\% for the EPARA-style router. Alignment barely changes the compliant routers (TRACE 0.960, 0.960 and 0.958 at \(\lambda=0\), 0.5 and 1), nor the cost of compliance under perfect information (1.2, 0.8 and 0.8 points). In short, aligning data with clearance makes violations rarer but does not remove the need for a trust filter in the router.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_corr.png}
+\caption{Alignment between data sensitivity and ingress clearance (\(\lambda\) is the share of requests that originate at a server whose clearance covers them; \(\rho=0.8\), 30 seeds). (a) Violation rate of trust-oblivious routing; (b) compliant SLO attainment.}
+\label{fig:4}
+\end{figure}
+
+\subsection{Overload and SLO-aware admission}
+
+Table V isolates the admission rule. When every router processes requests that can no longer meet their SLO (``serve late''), all of them collapse at saturation: C-SLO at \(\rho=1.0\) is between 0.07 and 0.25 and the compliant oracle reaches only 0.20. Late work occupies slots without contributing goodput and delays everything queued behind it, so the backlog grows without bound. Shedding requests that can no longer meet their SLO lifts every router, by 51 to 76 points at \(\rho=1.0\) and by 50 to 70 points at \(\rho=1.2\) (all \(p_H<4\times10^{-8}\)). The admission rule, not the choice of peer, is the decisive design element in overload, and it is simple to add to any of the routers.
+
+We also tested two fallbacks for the moment when the local view shows no eligible peer with spare capacity. Probing an eligible peer uniformly at random is neutral (within ±1.1 points of TF with either admission rule, \(p_H\ge0.25\)). A power-of-two-choices probe on synchronized backlog is harmful, by 1.1 to 5.9 points (\(p_H\le5\times10^{-4}\)), because it adds forwards toward peers that are themselves saturated. With shedding in place, no fallback is needed.
+
+\begin{table}[!t]
+\centering
+\caption{Compliant SLO attainment in overload with and without SLO-aware admission (30 seeds). ``Serve late'' executes requests that can no longer meet their SLO; ``shed'' rejects them.}
+\footnotesize
+\begin{adjustbox}{max width=\columnwidth}
+\begin{tabular}{lllll}
+\toprule
+Policy & ρ=1.0 serve late & ρ=1.0 shed & ρ=1.2 serve late & ρ=1.2 shed \\
+\midrule
+EPARA-style & 0.067±0.015 & 0.728±0.010 & 0.016±0.002 & 0.545±0.025 \\
+TF-RR & 0.245±0.017 & 0.752±0.013 & 0.119±0.011 & 0.633±0.016 \\
+TF-P2C & 0.137±0.027 & 0.814±0.014 & 0.020±0.005 & 0.651±0.019 \\
+TF & 0.158±0.042 & 0.875±0.010 & 0.034±0.007 & 0.719±0.022 \\
+TF + uniform probe & 0.162±0.029 & 0.875±0.009 & 0.029±0.005 & 0.730±0.022 \\
+TF + P2C fallback & 0.099±0.032 & 0.864±0.009 & 0.008±0.004 & 0.678±0.024 \\
+TRACE & 0.136±0.032 & 0.895±0.010 & 0.031±0.005 & 0.733±0.024 \\
+Central oracle (trust) & 0.203±0.088 & 0.859±0.020 & 0.007±0.006 & 0.503±0.033 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
 \end{table}
 
-\textbf{Is it stale information?} A natural explanation is herding: all servers see the same stale headroom values and pile onto the same ``energy-rich'' peers~\cite{mitzenmacher2000old}. If so, fresher state should shrink the penalty. Fig.~\ref{fig:estale} shows the opposite. Under hard outage, the penalty of TF+EW \emph{grows} as the sync period shrinks, from $-0.170$ at $H=2$\,s to $-0.388$ at $H=0.1$\,s (TF+EC: $-0.183$ to $-0.443$; all $p=0.002$), and availability falls with it. Stale information therefore does not cause the failure; the more accurately the router acts on energy headroom, the worse it does. We explain why in Section~\ref{sec:discussion}.
+\subsection{State staleness}
 
-\begin{figure}[t]
+Fig. 5 varies the synchronization period \(H\). With SLO-aware admission, fresher state helps the capacity-proportional routers at both loads: TRACE gains 2.5 points at \(\rho=0.8\) and 5.0 points at \(\rho=1.0\) when \(H\) falls from 2 s to 0.1 s (\(p_H<10^{-4}\)), and TF behaves alike. TF-JSQ, which acts deterministically on the synchronized backlog, benefits least from fresh state at \(\rho=1.0\) (+1.4 points, \(p_H=0.15\)), and it is 3.3 to 8.1 points behind TRACE at that load for every \(H\) tested. At \(\rho=0.8\), TRACE and TF-JSQ are tied for both short and long sync periods.
+
+\begin{figure}[!t]
 \centering
-\resizebox{\columnwidth}{!}{%
-% --- begin inline: gen/fig_estale.tex (generated from the experiment data) ---
-\begin{tikzpicture}
-\begin{groupplot}[group style={group size=2 by 1, horizontal sep=1.25cm},
-  width=4.6cm, height=3.7cm, grid=major, grid style={gray!20},
-  tick label style={font=\scriptsize}, label style={font=\scriptsize}, ylabel shift=-2pt,
-  title style={font=\scriptsize, yshift=-1ex}, every axis plot/.append style={},
-  legend style={font=\scriptsize, draw=none, column sep=6pt}, cycle list name=exotic]
-\nextgroupplot[title={(a)}, xlabel={Sync period $H$ (s)}, ylabel={C-SLO, soft}, xmode=log, log basis x=10, legend columns=2, legend to name=leg:estale]
-\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.4556) +- (0,0.172) (0.25,0.4529) +- (0,0.15) (0.5,0.4845) +- (0,0.169) (1,0.5184) +- (0,0.132) (2,0.5469) +- (0,0.097)};
-\addlegendentry{TF (trust filter)}
-\addplot+[color=cEW, mark=triangle*, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.3598) +- (0,0.117) (0.25,0.3624) +- (0,0.113) (0.5,0.3998) +- (0,0.107) (1,0.4542) +- (0,0.101) (2,0.4679) +- (0,0.0826)};
-\addlegendentry{TF+EW (energy wt.)}
-\addplot+[color=cEC, mark=star, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.4685) +- (0,0.0871) (0.25,0.4521) +- (0,0.103) (0.5,0.4498) +- (0,0.0961) (1,0.5077) +- (0,0.0941) (2,0.521) +- (0,0.0955)};
-\addlegendentry{TF+EC (energy cap.)}
-\nextgroupplot[title={(b)}, xlabel={Sync period $H$ (s)}, ylabel={C-SLO, outage}, xmode=log, log basis x=10]
-\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.6162) +- (0,0.0278) (0.25,0.596) +- (0,0.0311) (0.5,0.5895) +- (0,0.0335) (1,0.5676) +- (0,0.048) (2,0.5405) +- (0,0.0418)};
-\addlegendentry{TF (trust filter)}
-\addplot+[color=cEW, mark=triangle*, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.2287) +- (0,0.0527) (0.25,0.2587) +- (0,0.0715) (0.5,0.2886) +- (0,0.0589) (1,0.3343) +- (0,0.0502) (2,0.3709) +- (0,0.0556)};
-\addlegendentry{TF+EW (energy wt.)}
-\addplot+[color=cEC, mark=star, dashed, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.1736) +- (0,0.0462) (0.25,0.1771) +- (0,0.0491) (0.5,0.2096) +- (0,0.0569) (1,0.285) +- (0,0.0602) (2,0.358) +- (0,0.0417)};
-\addlegendentry{TF+EC (energy cap.)}
-\legend{}
-\end{groupplot}
-\node at ($(group c1r1.north west)!0.5!(group c2r1.north east)+(0,0.75cm)$) {\pgfplotslegendfromname{leg:estale}};
-\end{tikzpicture}
-% --- end inline ---
-}
-\caption{Energy-aware variants vs.\ the state-sync period $H$ (cap scale 0.5, $\rho=0.8$). Under hard outages (b), fresher state makes energy weighting worse, ruling out stale-information herding as the main cause.}
-\label{fig:estale}
+\includegraphics[width=\columnwidth]{figures/fig_stale.png}
+\caption{Sensitivity to the state-sync period \(H\) at (a) \(\rho=0.8\) and (b) \(\rho=1.0\) (20 seeds).}
+\label{fig:5}
 \end{figure}
 
-\subsection{State staleness and saturation}\label{sec:res-stale}
+\subsection{Partial placement and a cloud fallback}
 
-Fig.~\ref{fig:stale} varies the sync period $H$ for the trust-oblivious routers and TF. At $\rho=0.8$, capacity-proportional routing is insensitive to staleness up to $H=1$\,s (EPARA-style 0.88--0.92, TF 0.84--0.86 raw SLO) and degrades at $H=2$\,s (TF 0.781).
+Table VI relaxes two simplifications. When each service is hosted on only half of the servers (at least one per domain), all routers lose: TRACE falls from 0.961 to 0.906, because fewer eligible servers host each service. A cloud tier with 96 slots, 40 ms one-way latency and clearance 1 recovers part of this loss (TRACE 0.932 with partial placement and 0.970 with full placement), while serving only 0.9\% to 2.7\% of the requests. The cloud cannot help sensitivity-2 requests, which must stay in their domain. TRACE's advantage over the EPARA-style router is stable across all four settings (+14.1 to +16.9 points, \(p_H<10^{-5}\)).
 
-At saturation ($\rho=1.0$) the effect reverses: fresher state \emph{hurts}. TF's raw SLO is 0.176 with $H=0.1$\,s but 0.289 with $H=1$\,s, and forwards per request fall from 1.08 to 0.80. The capacity view averages spare slots over a 0.5\,s horizon; when every server is saturated, a fresh view correctly reports almost no spare capacity, the offload weights collapse, and requests are served late locally. A stale view overstates spare capacity and keeps requests moving, so they find the short-lived free slots that 30\,ms classification jobs leave behind. Round-robin forwards regardless and therefore performs comparatively well at saturation (raw SLO 0.281). Even so, \sys{} retains a significant category-balanced advantage over round-robin at $\rho=1.0$ ($+0.109\pm0.051$, $p=0.004$), while the per-request difference is not significant ($+0.047$, $p=0.084$).
-
-\textbf{The shared-pointer artifact.} A round-robin baseline whose pointer is shared by all servers---a natural implementation in a simulator---spreads load more evenly than any decentralized policy could, because it uses implicit global coordination. It overstates round-robin's compliant SLO at saturation by $+0.057\pm0.035$ ($p=0.014$); below saturation the difference is not significant. Our earlier experiments used the shared pointer and wrongly suggested that round-robin beats capacity-aware routing at saturation; we report the decentralized version throughout.
-
-\begin{figure}[t]
+\begin{table*}[!t]
 \centering
-\resizebox{\columnwidth}{!}{%
-% --- begin inline: gen/fig_stale.tex (generated from the experiment data) ---
-\begin{tikzpicture}
-\begin{groupplot}[group style={group size=2 by 1, horizontal sep=1.25cm},
-  width=4.6cm, height=3.7cm, grid=major, grid style={gray!20},
-  tick label style={font=\scriptsize}, label style={font=\scriptsize}, ylabel shift=-2pt,
-  title style={font=\scriptsize, yshift=-1ex}, every axis plot/.append style={},
-  legend style={font=\scriptsize, draw=none, column sep=6pt}, cycle list name=exotic]
-\nextgroupplot[title={(a)}, xlabel={Sync period $H$ (s)}, ylabel={Raw SLO ($\rho{=}0.8$)}, xmode=log, log basis x=10, legend columns=3, legend to name=leg:stale]
-\addplot+[color=cRR, mark=triangle*, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.6782) +- (0,0.0582) (0.25,0.6782) +- (0,0.0582) (0.5,0.6782) +- (0,0.0582) (1,0.6782) +- (0,0.0582) (2,0.6782) +- (0,0.0582)};
-\addlegendentry{Round-robin}
-\addplot+[color=cEPARA, mark=*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.9005) +- (0,0.0845) (0.25,0.8882) +- (0,0.124) (0.5,0.9186) +- (0,0.0826) (1,0.8835) +- (0,0.11) (2,0.8619) +- (0,0.0835)};
-\addlegendentry{EPARA-style}
-\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.8421) +- (0,0.0817) (0.25,0.8519) +- (0,0.0581) (0.5,0.858) +- (0,0.0445) (1,0.8407) +- (0,0.0456) (2,0.7814) +- (0,0.0619)};
-\addlegendentry{TF (trust filter)}
-\nextgroupplot[title={(b)}, xlabel={Sync period $H$ (s)}, ylabel={Raw SLO ($\rho{=}1.0$)}, xmode=log, log basis x=10]
-\addplot+[color=cRR, mark=triangle*, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.2812) +- (0,0.0496) (0.25,0.2812) +- (0,0.0496) (0.5,0.2812) +- (0,0.0496) (1,0.2812) +- (0,0.0496) (2,0.2812) +- (0,0.0496)};
-\addlegendentry{Round-robin}
-\addplot+[color=cEPARA, mark=*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.1797) +- (0,0.0712) (0.25,0.1834) +- (0,0.0794) (0.5,0.2106) +- (0,0.0702) (1,0.236) +- (0,0.063) (2,0.2633) +- (0,0.0528)};
-\addlegendentry{EPARA-style}
-\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(0.1,0.1763) +- (0,0.0604) (0.25,0.1859) +- (0,0.0573) (0.5,0.2294) +- (0,0.0641) (1,0.2894) +- (0,0.0526) (2,0.3061) +- (0,0.0501)};
-\addlegendentry{TF (trust filter)}
-\legend{}
-\end{groupplot}
-\node at ($(group c1r1.north west)!0.5!(group c2r1.north east)+(0,0.75cm)$) {\pgfplotslegendfromname{leg:stale}};
-\end{tikzpicture}
-% --- end inline ---
-}
-\caption{Sensitivity to the state-sync period $H$ at (a) $\rho=0.8$ and (b) $\rho=1.0$. At saturation, fresher state reduces forwarding and lowers SLO attainment of capacity-proportional routers.}
-\label{fig:stale}
+\caption{Partial placement and a cloud fallback (\(\rho=0.8\), 20 seeds). Placement: share of servers hosting each service.}
+\footnotesize
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lllllll}
+\toprule
+Placement & Cloud & EPARA-style C-SLO & TF C-SLO & TRACE C-SLO & TRACE cloud share & EPARA viol. \\
+\midrule
+100\% & no & 0.792±0.008 & 0.951±0.008 & 0.961±0.007 & 0.000 & 0.195 \\
+100\% & yes & 0.803±0.008 & 0.962±0.007 & 0.970±0.007 & 0.009 & 0.197 \\
+50\% & no & 0.748±0.021 & 0.896±0.019 & 0.906±0.017 & 0.000 & 0.200 \\
+50\% & yes & 0.791±0.016 & 0.921±0.015 & 0.932±0.015 & 0.027 & 0.208 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table*}
+
+\subsection{Robustness to parameters and topology}
+
+Appendix Table IX varies one parameter at a time (10 seeds). TRACE stays within 0.919 and 0.981 C-SLO in every setting and is ahead of TF in every one. The largest effects are structural: allowing only one forward (\(K_{\max}=1\)) costs 4.3 points, and more trust domains cost capacity for sensitivity-2 requests (0.981 with one domain, 0.942 with five). A short capacity horizon (\(\Delta=0.1\) s) costs 1.9 points; the proximity scale \(\ell_0\) has no measurable effect, and removing the fit preference (factor 0) slightly helps. With fewer high-clearance servers (clearance mix 0.5/0.3/0.2), TRACE falls to 0.933, and with more (0.2/0.4/0.4) it rises to 0.972.
+
+Confidence intervals across seeds are dominated by topology. Running five arrival sequences on each of ten topologies, the topology accounts for 88\% of the variance of the EPARA-style router's C-SLO and 58\% of TRACE's (intraclass correlation). TRACE's gain over the EPARA-style router, however, is positive on every topology (+12.6 to +18.5 points), and it is not correlated with the share of capacity eligible for sensitivity-2 requests (Spearman \(-0.04\), \(p=0.91\)). Paired comparisons over seeds, which cancel the topology effect, are therefore the appropriate test, and they are what we report.
+
+\subsection{Scale and decision overhead}
+
+Fig. 6 varies the number of servers from 10 to 120 (10 seeds). TRACE's C-SLO rises with scale (0.894 at \(N=10\), 0.979 at \(N=120\)), because larger systems contain more eligible peers at every sensitivity level, and it is at or above TF, TF-P2C and TF-RR at every size. A routing decision takes 17 to 20 µs in our Python prototype (measured while two simulations shared two CPU cores), almost independent of \(N\) because the per-peer arithmetic is vectorized; TF-RR is cheaper (3 µs) but routes worse. This is nearly four orders of magnitude below the tightest SLO of 150 ms, and the decision needs no communication. The cost that does grow with \(N\) is the age of the synchronized view (Section IV-C), which our simulator does not model and which we leave to future work.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_scale.png}
+\caption{Scaling the number of edge servers (\(\rho=0.8\), 10 seeds): (a) compliant SLO attainment, (b) routing time per decision.}
+\label{fig:6}
 \end{figure}
 
-\subsection{Scale and decision overhead}\label{sec:res-scale}
+\section{Energy-Aware Routing: A Hypothesis Test}
 
-Fig.~\ref{fig:scale} varies the number of servers from 10 to 120 at $\rho=0.8$ (5 seeds). \sys{}'s compliant SLO attainment stays high and rises with scale (0.854 at $N=10$, 0.933 at $N=120$), because larger systems contain more eligible peers for every sensitivity level; TF follows the same trend at a lower level (0.823 to 0.883), and round-robin stays between 0.57 and 0.62. Routing time per request grows linearly with $N$, from 20\,$\mu$s at $N=10$ to 51\,$\mu$s at $N=120$, in an unoptimized Python implementation measured while seven simulations shared an 8-core Apple M3. This is three orders of magnitude below the 150\,ms SLO of the tightest service, and \sys{} adds only 2--3\,$\mu$s over TF. Since decisions use only local state, no communication is added on the request path.
+\textbf{Hypothesis.} On power-capped, solar or battery-backed sites, scaling the offload score by peers' energy headroom should raise compliant SLO attainment, because it steers work away from servers that are about to throttle or go offline. We test this hypothesis with the five variants of Section IV-D on top of TF, under both energy models, with constant supply at \(\Phi\in\{0.6,0.9,1.2\}\) and with phase-shifted solar supply at \(\Phi\in\{0.9,1.2\}\), in 180 s runs measured after a 60 s warm-up from a random initial charge (10 seeds; Tables VII and VIII, Fig. 7). For each experiment, the 30 (constant supply) or 20 (solar) comparisons with TF form one Holm family.
 
-\begin{figure}[t]
+\textbf{Energy scarcity with soft throttling.} When supply is well below demand (\(\Phi=0.6\)), steering by energy hurts. TF+EW loses 9.2 points and TF+EC 15.8 points against TF (0.934), while the bounded variant that only deprioritizes is indistinguishable from TF (+0.0 points). The losses are consistent across seeds (TF+EW and TF+EC lose on every seed) but, with 10 seeds and 30 tests in the family, their Holm-adjusted \(p\)-values are 0.06 and 0.06. The mechanism is visible in the measured dispersion: TF+EW raises the coefficient of variation of per-server utilization from 0.20 to 0.26 and forwards per request from 0.70 to 0.97, and TF+EC raises the utilization CV to 0.30. Work is concentrated on the servers that currently hold energy, while servers with low headroom but idle slots, which could still run short jobs, are avoided. Energy weighting does reduce throttling (throttled fraction 37.2\% instead of 51.1\%), but the extra forwarding and concentration cost more SLO attainment than the avoided throttling saves. Even perfect energy information does not help here: the feasibility oracle TF+EF loses 3.4 points, because excluding servers that cannot finish a job without throttling also excludes capacity that would have served the job within its SLO.
+
+\textbf{Hard outages.} Under the outage model the penalty disappears. TF+EW is level with TF when energy is scarce (+0.1 points at \(\Phi=0.6\)) and slightly ahead when supply is closer to demand (+0.8 and +0.7 points at \(\Phi=0.9\) and 1.2, ahead on 9 of 10 seeds), and it keeps more servers online: at \(\Phi=0.9\), availability rises from 0.888 to 0.957 and drain events fall from 6.3 to 2.5 per minute. Avoiding peers that are close to their outage threshold prevents the outage itself, which removes a whole server's capacity for the recharge period. The gains are small, however, and none is significant after correction (smallest Holm-adjusted \(p\): 0.09). TF+EC coincides with TF under this model, because its energy capacity binds only when a buffer is nearly empty or overdrawn, and such servers are already offline.
+
+\textbf{Sufficient and heterogeneous supply.} When aggregate supply exceeds demand (\(\Phi=1.2\)), with constant or phase-shifted solar supply, every variant is within 0.7 points of TF, and no difference is significant. With solar supply at \(\Phi=0.9\), so that some sites are in surplus while others are in deficit, the picture is the same as with constant supply but weaker: TF+EW loses 0.7 points under soft throttling and gains +1.4 points under outage, neither significant after correction. Shifting work toward sites that currently have surplus energy, which is the scenario in which energy-aware routing seemed most promising, therefore yields no measurable benefit at the per-request timescale in our setting.
+
+\textbf{Timescales and staleness.} With a short 20 s buffer the soft-throttling penalty of TF+EW remains (−8.7 points) and the outage gain is +1.4 points; with a 600 s buffer, all variants coincide with TF (within 0.1 points). Under solar supply at \(\Phi=0.9\) with outages, the difference between TF+EW and TF is +1.1 points with fresh state (\(H=0.1\) s) and +0.8 points with stale state (\(H=2\) s), so staleness does not change the conclusion.
+
+\textbf{Conclusion of the test.} The hypothesis is not supported as a general rule. Energy-headroom weighting is harmful when energy is scarce and an empty buffer slows work down, gives small and statistically unconfirmed gains when an empty buffer takes a server offline, and is neutral when supply is sufficient. A bounded weight that never excludes a peer is harmless in every regime but also never helps significantly. At the per-request timescale, energy information is best used as a feasibility check at the processing server and, if hard outages are expected, as a mild preference against peers near their outage threshold; larger gains, if any, are more likely at slower layers that can act on forecasts, such as service placement, admission control and DVFS.
+
+\begin{figure*}[!t]
 \centering
-\resizebox{\columnwidth}{!}{%
-% --- begin inline: gen/fig_scale.tex (generated from the experiment data) ---
-\begin{tikzpicture}
-\begin{groupplot}[group style={group size=2 by 1, horizontal sep=1.25cm},
-  width=4.6cm, height=3.7cm, grid=major, grid style={gray!20},
-  tick label style={font=\scriptsize}, label style={font=\scriptsize}, ylabel shift=-2pt,
-  title style={font=\scriptsize, yshift=-1ex}, every axis plot/.append style={},
-  legend style={font=\scriptsize, draw=none, column sep=6pt}, cycle list name=exotic]
-\nextgroupplot[title={(a)}, xlabel={Edge servers $N$}, ylabel={Compliant SLO}, legend columns=3, legend to name=leg:scale]
-\addplot+[color=cRR, mark=triangle*, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(10,0.6175) +- (0,0.168) (30,0.5805) +- (0,0.0537) (60,0.6011) +- (0,0.0624) (120,0.569) +- (0,0.0299)};
-\addlegendentry{Round-robin}
-\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(10,0.8227) +- (0,0.136) (30,0.8545) +- (0,0.0592) (60,0.908) +- (0,0.0472) (120,0.8826) +- (0,0.029)};
-\addlegendentry{TF (trust filter)}
-\addplot+[color=cTRACE, mark=diamond*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(10,0.8539) +- (0,0.0755) (30,0.8557) +- (0,0.119) (60,0.935) +- (0,0.0365) (120,0.9326) +- (0,0.0093)};
-\addlegendentry{\textsc{Trace}}
-\nextgroupplot[title={(b)}, xlabel={Edge servers $N$}, ylabel={Time ($\mu$s/request)}]
-\addplot+[color=cRR, mark=triangle*, densely dotted, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(10,1.383) +- (0,0.501) (30,1.551) +- (0,0.145) (60,1.349) +- (0,0.188) (120,1.181) +- (0,0.0824)};
-\addlegendentry{Round-robin}
-\addplot+[color=cTF, mark=square*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(10,17.99) +- (0,4.09) (30,29.67) +- (0,4.23) (60,35.57) +- (0,2.8) (120,51.88) +- (0,5.02)};
-\addlegendentry{TF (trust filter)}
-\addplot+[color=cTRACE, mark=diamond*, solid, mark options={solid, scale=0.9}, line width=0.9pt, error bars/.cd, y dir=both, y explicit, error bar style={line width=0.4pt}] coordinates {(10,20.1) +- (0,5.04) (30,32.76) +- (0,7.87) (60,37.03) +- (0,3.16) (120,51.15) +- (0,5.12)};
-\addlegendentry{\textsc{Trace}}
-\legend{}
-\end{groupplot}
-\node at ($(group c1r1.north west)!0.5!(group c2r1.north east)+(0,0.75cm)$) {\pgfplotslegendfromname{leg:scale}};
-\end{tikzpicture}
-% --- end inline ---
-}
-\caption{Scaling the number of edge servers ($\rho=0.8$, 5 seeds): (a) compliant SLO attainment, (b) routing time per request.}
-\label{fig:scale}
-\end{figure}
+\includegraphics[width=\textwidth]{figures/fig_energy.png}
+\caption{Energy-aware variants as the supply ratio \(\Phi\) varies (constant supply, \(\rho=0.8\), 10 seeds). Compliant SLO attainment under (a) soft throttling and (b) hard outages; (c) coefficient of variation of per-server utilization and (d) mean server availability under hard outages.}
+\label{fig:7}
+\end{figure*}
 
-% =====================================================================
-\section{Discussion}\label{sec:discussion}
+\begin{table*}[!t]
+\centering
+\caption{Compliant SLO attainment of energy-aware variants with constant supply (180 s runs, 10 seeds).}
+\footnotesize
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{llllllll}
+\toprule
+Φ & Model & TF & TF+EW & TF+EB & TF+EC & TF+EW-bounded & TF+EF (oracle feas.) \\
+\midrule
+0.6 & soft & 0.93±0.01 & 0.84±0.02 & 0.91±0.01 & 0.78±0.02 & 0.93±0.01 & 0.90±0.02 \\
+0.6 & outage & 0.66±0.03 & 0.66±0.04 & 0.66±0.03 & 0.66±0.03 & 0.66±0.03 & 0.64±0.03 \\
+0.9 & soft & 0.93±0.01 & 0.93±0.01 & 0.94±0.01 & 0.92±0.01 & 0.94±0.01 & 0.94±0.01 \\
+0.9 & outage & 0.91±0.01 & 0.92±0.01 & 0.91±0.01 & 0.91±0.01 & 0.91±0.01 & 0.90±0.01 \\
+1.2 & soft & 0.94±0.01 & 0.94±0.00 & 0.94±0.01 & 0.94±0.01 & 0.94±0.00 & 0.94±0.01 \\
+1.2 & outage & 0.94±0.00 & 0.94±0.00 & 0.94±0.01 & 0.94±0.00 & 0.94±0.01 & 0.94±0.00 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table*}
 
-\textbf{Why energy-aware routing fails.}
-In our setting, energy is the binding resource, and every policy spends all of it: under the hard-outage model at cap scale 0.5, total power drawn is 10.0--10.6\,kW for all variants, and at most 0.1\% of the energy income is lost to full buffers. A router therefore cannot \emph{save} energy; it can only decide how much useful work each joule buys. TF spends 9.1\,J per successful request, TF+EW 16.7\,J and TF+EC 20.2\,J. Energy-aware routing loses for three related reasons.
-(i) \emph{It is not work-conserving.} It declines compute that is free right now on servers with low headroom, even though serving a short request there would use energy those servers already hold.
-(ii) \emph{It concentrates load.} Requests flow to whichever servers currently have the most energy, which drains them faster and synchronizes outages; availability falls (0.47 to 0.36--0.40) and drain events rise.
-(iii) \emph{Weighting adds forwarding.} With TF+EW and TF+EB, forwards per request rise from 1.36 to 1.59 and 1.52, adding latency and missed SLOs. TF+EC forwards less (1.14) yet loses the most, consistent with (i) and (ii) dominating.
-Because the first two effects grow with the accuracy of the headroom signal, fresher state makes them worse (Fig.~\ref{fig:estale}), which is the opposite of the herding signature. Our conclusion is that, at the per-request timescale, energy should enter routing only through \emph{local feasibility}---whether a server can run the request now without throttling---and not as a preference among peers. Energy-aware decisions belong at slower layers that can act on forecasts: service placement, admission control and DVFS.
+\begin{table*}[!t]
+\centering
+\caption{Compliant SLO attainment with phase-shifted solar supply (three time zones; 10 seeds).}
+\footnotesize
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{llllllll}
+\toprule
+Φ & Model & TF & TF+EW & TF+EB & TF+EC & TF+EW-bounded & TF+EF (oracle feas.) \\
+\midrule
+0.9 & soft & 0.93±0.01 & 0.93±0.01 & 0.94±0.01 & 0.92±0.01 & 0.94±0.01 & 0.92±0.01 \\
+0.9 & outage & 0.90±0.02 & 0.91±0.01 & 0.91±0.01 & 0.90±0.02 & 0.91±0.02 & 0.90±0.02 \\
+1.2 & soft & 0.94±0.01 & 0.94±0.00 & 0.95±0.01 & 0.94±0.01 & 0.94±0.01 & 0.94±0.01 \\
+1.2 & outage & 0.94±0.00 & 0.94±0.00 & 0.94±0.01 & 0.94±0.00 & 0.94±0.01 & 0.94±0.01 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table*}
 
-\textbf{Averaged signals and fast jobs.}
-The saturation result (Section~\ref{sec:res-stale}) and the energy result share a pattern: the router acts on a signal averaged over a horizon (0.5\,s of capacity, a 20\,s energy buffer) that is coarser than the jobs it routes (30\,ms classifications), and it acts on it too decisively. Sampling peers in proportion to the signal, rather than picking the best one, already softens this; a natural refinement is to keep a small exploration probability, or to use power-of-two choices~\cite{mitzenmacher2001two} over eligible peers, whenever the view says no peer has spare capacity. A preliminary test of uniform probing among eligible peers in that case did not help at saturation, so we leave the design of such a fallback to future work.
+\section{Discussion}
 
-\textbf{Implications for EPARA-style systems.}
-The trust filter is a small, local change to EPARA's handler: it adds a per-peer eligibility test, keeps decisions in tens of microseconds and needs only static clearance and domain labels in the synchronized state. Given that trust-oblivious handlers serve about one in five requests unlawfully under our assumptions, we argue that compliant goodput, not raw goodput, should be the headline metric for edge inference systems that handle regulated data.
+\textbf{What the results say about compliant routing.} Three design elements matter, in decreasing order of effect. First, SLO-aware admission decides whether a router survives saturation at all: without it, every router we evaluated, including a centralized oracle, served fewer than a quarter of requests on time at \(\rho=1.0\). Second, the trust filter is a precondition, not an optimization: a router that ignores the constraint violates it for a share of requests that is fixed by the label distributions, and aligning data with clearance only reduces that share. Third, among compliant routers the choice of peer matters most near saturation, where capacity-proportional sampling outperforms round-robin, power-of-two choices and join-the-shortest-queue; below saturation, TF-JSQ is equally good. Best-fit clearance is a modest refinement worth about one to two points when a substantial share of traffic is sensitive, and the adaptive rule makes it safe to leave enabled. We therefore regard the trust filter with SLO-aware admission as the core of TRACE and best-fit clearance as an optional component.
 
-\textbf{Threats to validity and limitations.}
-\emph{Simulation only.} All results come from an event-driven simulator. Service times, slot power, clearance and domain distributions, energy caps and the network model are assumptions modeled on EPARA's testbed scale, not measurements; absolute values should not be compared with EPARA's results~\cite{epara2025}. The qualitative conclusions---violation rates set by the fraction of ineligible servers, the cost of compliance growing with sensitive share, and energy-aware routing being non-work-conserving---depend on the structure of the problem rather than on specific constants, but we have not verified them on hardware.
-\emph{Workload.} Arrivals are synthetic (Poisson with hot spots and bursts), not the Azure function and LLM traces used by EPARA~\cite{shahrad2020serverless,epara2025}.
-\emph{Fixed layers.} Service placement and operator selection are fixed and identical across policies; we do not evaluate trust-aware placement, which could reduce the cost of compliance further.
-\emph{Trust model.} Clearance and domains are static labels with a single eligibility rule~\eqref{eq:elig}; real policies (consent, purpose limitation, cross-border transfer rules) are richer.
-\emph{Energy model.} Energy is a leaky bucket with fixed per-slot power; DVFS, idle power and cooling are not modeled.
-\emph{Statistics and tuning.} Each configuration was run for 30\,s with 10 seeds (5 in the scale study); confidence intervals across seeds are wide because topologies differ, so we base claims on paired tests. $\gamma$ was selected at a single sensitivity level.
-\emph{Timing.} Routing times are from an unoptimized Python prototype on a shared machine and are indicative only.
+\textbf{Cost of compliance.} With perfect information, compliance costs 1.2 points of SLO attainment at the default sensitive share and up to 10 points when 80\% of the traffic is sensitive; at the default share, a decentralized router pays about twice as much (2.7 points). The cost is driven by the capacity that is eligible for the most restrictive class, so it is a property of the deployment (how many servers carry which clearance in which domain) as much as of the router. Trust-aware service placement, which we hold fixed, is the natural lever to reduce it further.
 
-% =====================================================================
-\section{Conclusion}\label{sec:conclusion}
+\textbf{Static partitioning.} Dedicated pools per sensitivity tier are simple to audit, and they match TRACE when the pools are sized to the traffic, as they happen to be in our setting at 60--80\% sensitive traffic. They fail badly when the traffic mix and the pool sizes diverge (0.16 to 0.67 C-SLO at 0--40\% sensitive traffic). Routing that lets less sensitive requests use idle higher-clearance capacity removes this sizing problem.
 
-Decentralized, capacity-proportional request routing is an effective way to pool the scattered capacity of edge servers for AI inference, but routers designed this way treat every server as a lawful destination. We formalized trust-constrained routing for EPARA-style categorized inference, defined compliant goodput, and proposed \sys{}, which adds a hard trust filter and a best-fit clearance preference to capacity-proportional offloading at a cost of tens of microseconds per decision. In simulation, trust-oblivious routers serve roughly one in five requests outside its trust boundary at every load. \sys{} eliminates these violations and raises compliant goodput over an EPARA-style router; best-fit clearance helps further when much of the traffic is sensitive. Energy-headroom weighting, which we had expected to help on power-capped and battery-backed sites, did not improve compliant SLO attainment in any variant we tried and hurt substantially when drained servers go offline.
+\textbf{Implications for EPARA-style systems.} The trust filter is a small, local change to EPARA's handler: a per-peer eligibility test on static, attested labels, with decisions in tens of microseconds and no extra communication. SLO-aware admission is a local check as well. Because the violation rate of a trust-oblivious handler is set by the deployment rather than by the router, we argue that edge inference systems that handle regulated data should report goodput subject to compliance, together with the cost of compliance against a reference, rather than raw goodput alone.
 
-The next steps are to replace the assumed service and power profiles with measurements on edge hardware, to drive the simulator with production traces, to co-design trust-aware service placement with the router, to adapt the best-fit strength online, and to revisit energy awareness at the placement and admission-control layers, where it can act on forecasts rather than on a stale per-request signal.
+\textbf{Energy awareness.} Energy-headroom weighting did not hold up as a general improvement (Section VII). Every policy draws on the same energy income, so a router cannot create energy; it can only decide where work runs. When an empty buffer merely slows work down, avoiding low-headroom peers concentrates load and adds forwarding, which costs more than the throttling it prevents (9.2 points at \(\Phi=0.6\)). When an empty buffer takes a server offline, a mild preference against nearly drained peers prevents outages and slightly raises SLO attainment (+0.8 points at \(\Phi=0.9\), not significant after correction). Whether energy-aware routing helps therefore depends on how a site fails when energy runs out, which should be measured before such a policy is deployed.
 
-% =====================================================================
+\textbf{Threats to validity and limitations.} \emph{Simulation only.} All results come from an event-driven simulator. Service times, slot power, label distributions, energy supply and the network model are assumptions at the scale of EPARA's testbed, not measurements, and absolute values should not be compared with EPARA's results \cite{epara2025}. \emph{Operator abstraction.} EPARA's operators are reduced to fixed per-category slot and time profiles; batching gains, co-location interference and model loading are not modelled, so the evaluation concerns the request-handling layer only. \emph{Workload.} Arrivals are synthetic (Poisson with hot spots and bursts), not the Azure function and LLM traces used by EPARA \cite{epara2025,shahrad2020serverless}. \emph{Fixed layers.} Placement is either full replication or random partial replication; demand- and trust-aware placement is not evaluated. \emph{State dissemination.} Views are synchronized instantaneously every \(H\) seconds; the propagation delay of a ring, which grows with \(N\), and the bandwidth of synchronization are not modelled. \emph{Trust model.} Labels are static, attested and honest; eligibility follows a single rule (2), whereas real policies (consent, purpose limitation, cross-border transfer rules) are richer. \emph{References.} The centralized oracles are greedy earliest-finish dispatchers with perfect information, not proven optima; they are not upper bounds in overload. \emph{Energy model.} Energy is a buffer with fixed per-slot power; DVFS, idle power and cooling are not modelled, and solar supply is a compressed sinusoid rather than a measured profile. \emph{Statistics.} Trust experiments use 30 seeds (fewer for robustness and scale studies) and energy experiments 10 seeds; all claims rest on paired tests with Holm correction within declared families, and \(\gamma\) and \(q^\ast\) were tuned on separate seeds. \emph{Timing.} Decision times come from a Python prototype on a shared machine and are indicative only.
+
+\section{Conclusion}
+
+Decentralized, capacity-proportional request routing pools the scattered capacity of edge servers effectively, but routers designed this way treat every server as a lawful destination. We formulated trust-constrained routing for categorized edge inference as goodput maximization subject to zero violations, using multilevel-security labels and an explicit threat model, and showed that the violation rate of trust-oblivious routing is fixed by the label distributions. TRACE combines a hard trust filter, SLO-aware admission and an adaptive best-fit clearance preference with capacity-proportional offloading. Against trust-filtered round-robin, power-of-two-choices and join-the-shortest-queue routing, static pools and a centralized oracle, TRACE was the best or tied-best decentralized compliant router at every load (tied with join-the-shortest-queue below saturation), within about three points of the centralized oracle below saturation and ahead of it in overload; compliance cost 1.2 points with perfect information and 2.7 points for decentralized routing at the default sensitive share. SLO-aware admission was the single most important element, raising every router's SLO attainment at \(\rho=1.0\) by more than 50 points. Energy-headroom weighting, which we had expected to help on energy-constrained sites, did not hold up as a general rule: it lost 9.2 points when energy was scarce and an empty buffer throttled work, gained at most 1.4 points (not significant after correction) when an empty buffer caused an outage, and made no difference when supply was sufficient.
+
+The next steps are to replace the assumed service and power profiles with measurements on edge hardware, to drive the simulator with production traces, to model state dissemination at scale, to co-design trust-aware service placement with the router, and to study energy awareness at the placement and admission-control layers, where forecasts can be used.
+
 \section*{Data and Code Availability}
-The simulator (\texttt{ecsim.py}), the experiment suite (\texttt{experiments\_v2.py}), the analysis scripts and the raw per-run results (1,740 runs) that produce every number, figure and table in this article are publicly available at \url{https://github.com/gaurav3611/edge-cloud-ai-routing}. The repository's README lists the steps to reproduce all results (about 30 minutes on an 8-core laptop).
+
+The simulator (ecsim.py), the experiment suite (experiments\_v3.py), the analysis script (analyze\_v3.py) and the raw per-run results (runs\_v3.jsonl, 6,040 runs) that produce every number, figure and table in this article are publicly available at https://github.com/gaurav3611/edge-cloud-ai-routing (branch revision-v3). The tuning seeds (1001--1010) and evaluation seeds are listed in the experiment script.
 
 \section*{Acknowledgment}
-% Edit or delete the bracketed sentences. Keep the AI-use disclosure: IEEE and many other
-% publishers require AI-generated content to be disclosed in the acknowledgments.
-The authors thank [Name, Department, University] for guidance and feedback on this work. [This work was supported by [funding body], grant no.~[XXXX].] The authors used Claude (Anthropic), an AI assistant, to help develop the simulation code, run and analyze the experiments, and draft and edit the manuscript; the authors reviewed and verified all content and take full responsibility for it.
 
-% ---- References (embedded; generated from refs.bib with IEEEtran.bst) ----
-% To manage references with BibTeX instead, replace this block with:
-%   \bibliographystyle{IEEEtran}
-%   \bibliography{refs}
-% Generated by IEEEtran.bst, version: 1.14 (2015/08/26)
-\begin{thebibliography}{10}
-\providecommand{\url}[1]{#1}
-\csname url@samestyle\endcsname
-\providecommand{\newblock}{\relax}
-\providecommand{\bibinfo}[2]{#2}
-\providecommand{\BIBentrySTDinterwordspacing}{\spaceskip=0pt\relax}
-\providecommand{\BIBentryALTinterwordstretchfactor}{4}
-\providecommand{\BIBentryALTinterwordspacing}{\spaceskip=\fontdimen2\font plus
-\BIBentryALTinterwordstretchfactor\fontdimen3\font minus
-  \fontdimen4\font\relax}
-\providecommand{\BIBforeignlanguage}[2]{{%
-\expandafter\ifx\csname l@#1\endcsname\relax
-\typeout{** WARNING: IEEEtran.bst: No hyphenation pattern has been}%
-\typeout{** loaded for the language `#1'. Using the pattern for}%
-\typeout{** the default language instead.}%
-\else
-\language=\csname l@#1\endcsname
-\fi
-#2}}
-\providecommand{\BIBdecl}{\relax}
-\BIBdecl
+This work received no external funding. The authors used Claude (Anthropic), an AI assistant, to help develop the simulation code, run and analyze the experiments, and draft and edit the manuscript; the authors reviewed and verified all content and take full responsibility for it.
 
-\bibitem{liu2025eccc}
-J.~Liu, Y.~Du, K.~Yang, Y.~Wang, X.~Hu, Z.~Wang, Y.~Liu, P.~Sun, A.~Boukerche,
-  and V.~C.~M. Leung, ``Edge-cloud collaborative computing on distributed
-  intelligence and model optimization: A survey,'' \emph{arXiv preprint
-  arXiv:2505.01821}, 2025.
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
 
-\bibitem{epara2025}
-Y.~Wang, Y.~Cui, T.~Shi, D.~Li, W.~Li, L.~Suo, T.~Wang, and X.~Xie, ``{EPARA}:
-  Parallelizing categorized {AI} inference in edge clouds,'' \emph{arXiv
-  preprint arXiv:2511.00603}, 2025.
-
-\bibitem{interedge}
-L.~Brown, E.~Marx, D.~Bali, E.~Amaro, D.~Sur \emph{et~al.}, ``An architecture
-  for edge networking services,'' in \emph{Proc. ACM SIGCOMM}, 2024, pp.
-  645--660.
-
-\bibitem{galaxy}
-S.~Ye, J.~Du, L.~Zeng, W.~Ou, X.~Chu \emph{et~al.}, ``Galaxy: A
-  resource-efficient collaborative edge {AI} system for in-situ transformer
-  inference,'' in \emph{Proc. IEEE INFOCOM}, 2024, pp. 1001--1010.
-
-\bibitem{servp}
-V.~Farhadi, F.~Mehmeti, T.~He, T.~F. La~Porta, H.~Khamfroush \emph{et~al.},
-  ``Service placement and request scheduling for data-intensive applications in
-  edge clouds,'' \emph{IEEE/ACM Trans. Netw.}, vol.~29, no.~2, pp. 779--792,
-  2021.
-
-\bibitem{alpaserve}
-Z.~Li, L.~Zheng, Y.~Zhong, V.~Liu, Y.~Sheng \emph{et~al.}, ``{AlpaServe}:
-  Statistical multiplexing with model parallelism for deep learning serving,''
-  in \emph{Proc. USENIX OSDI}, 2023, pp. 663--679.
-
-\bibitem{usher}
-S.~S. Shubha, H.~Shen, and A.~Iyer, ``{USHER}: Holistic interference avoidance
-  for resource optimized {ML} inference,'' in \emph{Proc. USENIX OSDI}, 2024,
-  pp. 947--964.
-
-\bibitem{gdpr}
-{European Parliament and Council}, ``Regulation ({EU}) 2016/679 ({General Data
-  Protection Regulation}),'' Official Journal of the European Union, L 119,
-  2016.
-
-\bibitem{mao2016harvest}
-Y.~Mao, J.~Zhang, and K.~B. Letaief, ``Dynamic computation offloading for
-  mobile-edge computing with energy harvesting devices,'' \emph{IEEE J. Sel.
-  Areas Commun.}, vol.~34, no.~12, pp. 3590--3605, 2016.
-
-\bibitem{min2019privacy}
-M.~Min, X.~Wan, L.~Xiao, Y.~Chen, M.~Xia, D.~Wu, and H.~Dai, ``Learning-based
-  privacy-aware offloading for healthcare {IoT} with energy harvesting,''
-  \emph{IEEE Internet Things J.}, vol.~6, no.~3, pp. 4307--4316, 2019.
-
-\bibitem{fisher1978submodular}
-M.~L. Fisher, G.~L. Nemhauser, and L.~A. Wolsey, ``An analysis of
-  approximations for maximizing submodular set functions---{II},''
-  \emph{Mathematical Programming Study}, vol.~8, pp. 73--87, 1978.
-
-\bibitem{nexus}
-H.~Shen, L.~Chen, Y.~Jin, L.~Zhao, B.~Kong \emph{et~al.}, ``Nexus: A {GPU}
-  cluster engine for accelerating {DNN}-based video analysis,'' in \emph{Proc.
-  ACM SOSP}, 2019, pp. 322--337.
-
-\bibitem{shepherd}
-H.~Zhang, Y.~Tang, A.~Khandelwal, and I.~Stoica, ``{SHEPHERD}: Serving {DNNs}
-  in the wild,'' in \emph{Proc. USENIX NSDI}, 2023, pp. 787--808.
-
-\bibitem{clockwork}
-A.~Gujarati, R.~Karimi, S.~Alzayat, W.~Hao, A.~Kaufmann, Y.~Vigfusson, and
-  J.~Mace, ``Serving {DNNs} like clockwork: Performance predictability from the
-  bottom up,'' in \emph{Proc. USENIX OSDI}, 2020, pp. 443--462.
-
-\bibitem{infaas}
-F.~Romero, Q.~Li, N.~J. Yadwadkar, and C.~Kozyrakis, ``{INFaaS}: Automated
-  model-less inference serving,'' in \emph{Proc. USENIX ATC}, 2021, pp.
-  397--411.
-
-\bibitem{neurosurgeon}
-Y.~Kang, J.~Hauswald, C.~Gao, A.~Rovinski, T.~Mudge, J.~Mars, and L.~Tang,
-  ``Neurosurgeon: Collaborative intelligence between the cloud and mobile
-  edge,'' in \emph{Proc. ACM ASPLOS}, 2017, pp. 615--629.
-
-\bibitem{edgeshard}
-M.~Zhang, J.~Cao, X.~Shen, and Z.~Cui, ``{EdgeShard}: Efficient {LLM} inference
-  via collaborative edge computing,'' \emph{arXiv preprint arXiv:2405.14371},
-  2024.
-
-\bibitem{mcmahan2017fl}
-B.~McMahan, E.~Moore, D.~Ramage, S.~Hampson, and B.~{Ag{\"u}era y Arcas},
-  ``Communication-efficient learning of deep networks from decentralized
-  data,'' in \emph{Proc. AISTATS}, 2017, pp. 1273--1282.
-
-\bibitem{ecoserve}
-Y.~Li, Z.~Hu, E.~Choukse, R.~Fonseca, G.~E. Suh, and U.~Gupta, ``{EcoServe}:
-  Designing carbon-aware {AI} inference systems,'' \emph{arXiv preprint
-  arXiv:2502.05043}, 2025.
-
-\bibitem{mitzenmacher2000old}
-M.~Mitzenmacher, ``How useful is old information?'' \emph{IEEE Trans. Parallel
-  Distrib. Syst.}, vol.~11, no.~1, pp. 6--20, 2000.
-
-\bibitem{mitzenmacher2001two}
-------, ``The power of two choices in randomized load balancing,'' \emph{IEEE
-  Trans. Parallel Distrib. Syst.}, vol.~12, no.~10, pp. 1094--1104, 2001.
-
-\bibitem{shahrad2020serverless}
-M.~Shahrad, R.~Fonseca, {\'I}.~Goiri, G.~Chaudhry, P.~Batum, J.~Cooke,
-  E.~Laureano, C.~Tresness, M.~Russinovich, and R.~Bianchini, ``Serverless in
-  the wild: Characterizing and optimizing the serverless workload at a large
-  cloud provider,'' in \emph{Proc. USENIX ATC}, 2020, pp. 205--218.
-
-\end{thebibliography}
-
-% =====================================================================
 \appendices
-\section{Additional Results}\label{app:results}
 
-Table~\ref{tab:category} breaks down compliant SLO attainment by request category at $\rho=0.8$. \sys{} has the highest attainment in every category; the frequency-sensitive multi-GPU category (FS$>$1, video segmentation) is the hardest for every router because its eight-slot streams need a large contiguous allocation on an eligible server.
+\section{Parameter Sensitivity}
 
-\begin{table}[h]
+Table IX varies one routing or topology parameter at a time around the defaults of Table II (\(\rho=0.8\), 10 seeds). TRACE is ahead of TF in every setting.
+
+\begin{table}[!t]
 \centering
-\caption{Compliant SLO attainment per request category at $\rho=0.8$ (10 seeds).}\label{tab:category}
-\resizebox{\columnwidth}{!}{%
-% --- begin inline: gen/tab_category.tex (generated from the experiment data) ---
-\begin{tabular}{lcccc}
+\caption{One-at-a-time sensitivity of compliant SLO attainment (\(\rho=0.8\), 10 seeds).}
+\footnotesize
+\begin{adjustbox}{max width=\columnwidth}
+\begin{tabular}{llll}
 \toprule
-Policy & LS$<$1 & LS$>$1 & FS$<$1 & FS$>$1 \\
+Parameter & Value & TF C-SLO & TRACE C-SLO \\
 \midrule
-Local only & 0.206$\pm$0.023 & 0.244$\pm$0.038 & 0.200$\pm$0.031 & 0.192$\pm$0.059 \\
-Round-robin & 0.549$\pm$0.047 & 0.700$\pm$0.035 & 0.585$\pm$0.042 & 0.412$\pm$0.072 \\
-EPARA-style & 0.707$\pm$0.083 & 0.787$\pm$0.037 & 0.718$\pm$0.043 & 0.563$\pm$0.104 \\
-TF (trust filter) & 0.840$\pm$0.046 & 0.909$\pm$0.027 & 0.852$\pm$0.028 & 0.646$\pm$0.117 \\
-\textsc{Trace} & 0.866$\pm$0.061 & 0.929$\pm$0.023 & 0.868$\pm$0.034 & 0.701$\pm$0.099 \\
-TF+EW (energy wt.) & 0.812$\pm$0.056 & 0.912$\pm$0.024 & 0.865$\pm$0.030 & 0.644$\pm$0.089 \\
+(default) & Kmax=2, ℓ0=20 ms, Δ=0.5 s, 0.05, 3 dom., 0.3/0.4/0.3 & 0.951±0.008 & 0.962±0.007 \\
+kmax & 1.0 & 0.903±0.011 & 0.919±0.011 \\
+kmax & 3.0 & 0.959±0.007 & 0.968±0.008 \\
+kmax & 4.0 & 0.961±0.006 & 0.969±0.007 \\
+l0 & 0.005 & 0.951±0.007 & 0.962±0.007 \\
+l0 & 0.08 & 0.949±0.006 & 0.961±0.006 \\
+horizon & 0.1 & 0.930±0.007 & 0.943±0.009 \\
+horizon & 0.25 & 0.945±0.007 & 0.956±0.006 \\
+horizon & 1.0 & 0.947±0.008 & 0.962±0.006 \\
+fitfac & 0.0 & 0.965±0.006 & 0.972±0.005 \\
+fitfac & 0.2 & 0.949±0.006 & 0.962±0.007 \\
+fitfac & 1.0 & 0.947±0.007 & 0.961±0.007 \\
+n\_dom & 1.0 & 0.969±0.006 & 0.981±0.003 \\
+n\_dom & 2.0 & 0.961±0.008 & 0.972±0.005 \\
+n\_dom & 5.0 & 0.934±0.007 & 0.942±0.007 \\
+clear\_p & (0.2, 0.4, 0.4) & 0.968±0.009 & 0.972±0.009 \\
+clear\_p & (0.5, 0.3, 0.2) & 0.916±0.009 & 0.933±0.011 \\
 \bottomrule
 \end{tabular}
-% --- end inline ---
-}
+\end{adjustbox}
 \end{table}
 
-Table~\ref{tab:energyfull} lists compliant SLO attainment for every energy-aware variant, energy model and cap scale shown in Fig.~\ref{fig:energy}.
+\section{Simulator Details}
 
-\begin{table}[h]
-\centering
-\caption{Compliant SLO attainment of the energy-aware variants ($\rho=0.8$, 10 seeds).}\label{tab:energyfull}
-\resizebox{\columnwidth}{!}{%
-% --- begin inline: gen/tab_energy.tex (generated from the experiment data) ---
-\begin{tabular}{llccccc}
-\toprule
-Model & Cap & TF & TF+EW & TF+EB & TF+EC & EW only \\
-\midrule
-Soft & 1 & 0.84$\pm$0.05 & 0.81$\pm$0.06 & 0.81$\pm$0.06 & 0.84$\pm$0.05 & 0.72$\pm$0.04 \\
- & 0.7 & 0.71$\pm$0.11 & 0.66$\pm$0.11 & 0.68$\pm$0.11 & 0.73$\pm$0.08 & 0.53$\pm$0.10 \\
- & 0.5 & 0.52$\pm$0.13 & 0.45$\pm$0.10 & 0.48$\pm$0.13 & 0.51$\pm$0.09 & 0.30$\pm$0.06 \\
- & 0.35 & 0.42$\pm$0.11 & 0.32$\pm$0.08 & 0.36$\pm$0.10 & 0.40$\pm$0.07 & 0.22$\pm$0.04 \\
-\midrule
-Outage & 1 & 0.82$\pm$0.03 & 0.80$\pm$0.06 & 0.80$\pm$0.06 & 0.78$\pm$0.07 & 0.65$\pm$0.07 \\
- & 0.7 & 0.71$\pm$0.03 & 0.53$\pm$0.08 & 0.61$\pm$0.06 & 0.44$\pm$0.06 & 0.35$\pm$0.04 \\
- & 0.5 & 0.57$\pm$0.05 & 0.33$\pm$0.05 & 0.43$\pm$0.05 & 0.28$\pm$0.06 & 0.23$\pm$0.04 \\
- & 0.35 & 0.43$\pm$0.03 & 0.24$\pm$0.02 & 0.31$\pm$0.03 & 0.21$\pm$0.03 & 0.17$\pm$0.01 \\
-\bottomrule
-\end{tabular}
-% --- end inline ---
-}
-\end{table}
-
-Table~\ref{tab:stalefull} lists raw SLO attainment and forwards per request against the sync period (Fig.~\ref{fig:stale}). At $\rho=1.0$, shorter sync periods reduce forwarding by the capacity-proportional routers and with it their SLO attainment.
-
-\begin{table}[h]
-\centering
-\caption{Raw SLO attainment and forwards per request vs.\ sync period $H$ (10 seeds).}\label{tab:stalefull}
-\resizebox{\columnwidth}{!}{%
-% --- begin inline: gen/tab_stale.tex (generated from the experiment data) ---
-\begin{tabular}{cc|cc|cc|cc}
-\toprule
- & & \multicolumn{2}{c|}{Round-robin} & \multicolumn{2}{c|}{EPARA-style} & \multicolumn{2}{c}{TF}\\
-$\rho$ & $H$ (s) & SLO & Fwd. & SLO & Fwd. & SLO & Fwd.\\
-\midrule
-0.8 & 0.1 & 0.678 & 1.25 & 0.901 & 0.74 & 0.842 & 0.77 \\
-0.8 & 0.25 & 0.678 & 1.25 & 0.888 & 0.71 & 0.852 & 0.78 \\
-0.8 & 0.5 & 0.678 & 1.25 & 0.919 & 0.74 & 0.858 & 0.79 \\
-0.8 & 1 & 0.678 & 1.25 & 0.883 & 0.80 & 0.841 & 0.83 \\
-0.8 & 2 & 0.678 & 1.25 & 0.862 & 0.88 & 0.781 & 0.90 \\
-\midrule
-1 & 0.1 & 0.281 & 1.73 & 0.180 & 0.66 & 0.176 & 0.80 \\
-1 & 0.25 & 0.281 & 1.73 & 0.183 & 0.80 & 0.186 & 0.88 \\
-1 & 0.5 & 0.281 & 1.73 & 0.211 & 0.92 & 0.229 & 1.01 \\
-1 & 1 & 0.281 & 1.73 & 0.236 & 1.03 & 0.289 & 1.08 \\
-1 & 2 & 0.281 & 1.73 & 0.263 & 1.11 & 0.306 & 1.11 \\
-\bottomrule
-\end{tabular}
-% --- end inline ---
-}
-\end{table}
-
-\section{Simulator Details}\label{app:sim}
-The simulator processes arrivals in time order. Every $H$ seconds it refreshes each server's view of its peers: spare slots over the next $\Delta=0.5$\,s, computed by clipping each slot's remaining busy time to the horizon, and the energy headroom $E_j/B_j$ (zero for an offline server). Between refreshes, a server debits its view of a peer by the slots it has itself sent there, so different servers hold different views. A service occupying $m$ slots starts when its $m$ earliest-free slots are available. Energy is drawn when a job is committed, at $P_s$ per slot for its duration, and the buffer refills continuously at $\bar P_j$. Network latency is added per forward. A request is counted once, after a 5\,s warm-up, as successful if it met its SLO and as a violation if it was served at an ineligible server. For each seed, the topology and the arrival sequence are identical across policies, which makes paired comparisons valid.
-
-% =====================================================================
-% Author biographies: these go at the END (IEEE Transactions style). Some journals do not
-% require them; delete this block if yours does not. Use IEEEbiography with a photo if required.
-\begin{IEEEbiographynophoto}{[First Author Name]}
-is pursuing the [degree] in [field] at [University], [City], [Country]. [Research interests: edge computing, AI inference systems, ...]
-\end{IEEEbiographynophoto}
-
-\begin{IEEEbiographynophoto}{[Second Author Name]}
-is a [Professor/Associate Professor] with the [Department], [University]. [Research interests ...]
-\end{IEEEbiographynophoto}
+The simulator processes arrivals in time order. Every \(H\) seconds it refreshes the view of every server: spare slots over the next \(\Delta\) seconds, computed by clipping each slot's remaining busy time to the horizon; the time until \(m\) slots become free, for \(m\in\{1,2,8\}\), used as the backlog estimate by TF-P2C and TF-JSQ; the online status; and, for the energy variants, the energy headroom \(E_j/B_j\). Between refreshes, a server debits its view of a peer by the work it has itself sent there, so different servers hold different views. A service occupying \(m\) slots starts when its \(m\) earliest-free slots are available. Energy is charged when a job is admitted, at \(P_s\) per slot for its duration, and the buffer refills continuously with the (constant or solar) supply. Network latency is added per forward. The centralized oracles evaluate every eligible, online server hosting the service with exact slot and energy state and the latency from the ingress server. Each seed fixes the topology, placement and arrival sequence, which are identical across routers, so comparisons are paired. A request is counted once, after the warm-up, as successful if it met its SLO, as a violation if it was processed at an ineligible server, and as shed if it was rejected.
 
 \end{document}
