@@ -1,0 +1,15 @@
+{
+ "suite": "abl",
+ "rows": 1560,
+ "planned": 1560,
+ "seeds": [
+  8001,
+  8030,
+  30
+ ],
+ "commits": [
+  "f6e4648"
+ ],
+ "routers": 13,
+ "failures": []
+}

@@ -1,0 +1,21 @@
+file,source,sha256_12,script
+tables/tab_held.tex,main,bd3c22fc740a,TRACE_revision/analysis/build_paper_main.py
+tables/tab_diff.tex,main,ceedcf7839a5,TRACE_remediation/paper_draft/analysis/build_numbers.py (difftable)
+figures/fig_load_a.png,main,9c4ac58222ef,TRACE_revision/analysis/build_paper_main.py
+figures/fig_load_b.png,main,0616f3ef19e5,TRACE_revision/analysis/build_paper_main.py
+figures/fig_load_c.png,main,c5affd07e9f3,TRACE_revision/analysis/build_paper_main.py
+figures/fig_category_a.png,main,d525ccf5571f,TRACE_revision/analysis/build_paper_main.py
+figures/fig_category_b.png,main,7cef07915335,TRACE_revision/analysis/build_paper_main.py
+figures/fig_violation_a.png,viol,c4cccb2f3993,TRACE_remediation/paper_draft/analysis/build_figures.py
+figures/fig_violation_b.png,viol,32fbabff883b,TRACE_remediation/paper_draft/analysis/build_figures.py
+figures/fig_mix_a.png,mix,cb03fb501089,TRACE_remediation/paper_draft/analysis/build_figures.py
+figures/fig_mix_b.png,mix,15118ea1653f,TRACE_remediation/paper_draft/analysis/build_figures.py
+figures/fig_ring_a.png,stale,762494ff1f96,TRACE_remediation/paper_draft/analysis/build_figures.py
+figures/fig_ring_b.png,stale,92ca72112b24,TRACE_remediation/paper_draft/analysis/build_figures.py
+figures/fig_scale_a.png,scale,a7f8ea8af0a4,TRACE_remediation/paper_draft/analysis/build_figures.py
+figures/fig_scale_b.png,scale,29254bef094c,TRACE_remediation/paper_draft/analysis/build_figures.py
+figures/fig_sens_a.png,robust,b323aa045460,TRACE_remediation/paper_draft/analysis/build_figures.py
+figures/fig_sens_b.png,robust,de6801400465,TRACE_remediation/paper_draft/analysis/build_figures.py
+figures/fig_crypto_a.png,crypto,3b46112ca524,TRACE_remediation/paper_draft/analysis/build_figures.py
+figures/fig_crypto_b.png,crypto,2c886e078912,TRACE_remediation/paper_draft/analysis/build_figures.py
+figures/fig_crypto_c.png,crypto,14debaed8496,TRACE_remediation/paper_draft/analysis/build_figures.py

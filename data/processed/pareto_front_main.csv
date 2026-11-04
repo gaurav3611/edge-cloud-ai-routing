@@ -1,0 +1,31 @@
+rho,x,y,name
+0.5,cslo,bcslo,Oracle compliant
+0.8,cslo,bcslo,Oracle compliant
+1.0,cslo,bcslo,Oracle compliant
+1.0,cslo,bcslo,frag
+1.0,cslo,bcslo,TRACE
+1.0,cslo,bcslo,TRACE fit0
+1.2,cslo,bcslo,Oracle compliant
+1.2,cslo,bcslo,large+adm_big.1
+1.2,cslo,bcslo,frag
+1.2,cslo,bcslo,TRACE
+1.2,cslo,bcslo,TRACE fit0
+1.2,cslo,bcslo,adm_big.3
+0.5,cslo,wcslo,Oracle compliant
+0.8,cslo,wcslo,Oracle compliant
+1.0,cslo,wcslo,Oracle compliant
+1.0,cslo,wcslo,frag
+1.0,cslo,wcslo,TRACE
+1.0,cslo,wcslo,TRACE fit0
+1.2,cslo,wcslo,Oracle compliant
+1.2,cslo,wcslo,large_jsq
+1.2,cslo,wcslo,large8
+1.2,cslo,wcslo,large+adm_big.1
+1.2,cslo,wcslo,frag
+1.2,cslo,wcslo,TRACE
+1.2,cslo,wcslo,TRACE fit0
+1.2,cslo,wcslo,adm_big.3
+0.5,bcslo,wcslo,Oracle compliant
+0.8,bcslo,wcslo,Oracle compliant
+1.0,bcslo,wcslo,Oracle compliant
+1.2,bcslo,wcslo,Oracle compliant

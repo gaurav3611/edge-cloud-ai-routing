@@ -1,0 +1,15 @@
+{
+ "suite": "eventcmp",
+ "rows": 480,
+ "planned": 480,
+ "seeds": [
+  5001,
+  5020,
+  20
+ ],
+ "commits": [
+  "95aa9f7"
+ ],
+ "routers": 6,
+ "failures": []
+}

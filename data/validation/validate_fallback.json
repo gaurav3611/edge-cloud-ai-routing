@@ -1,0 +1,15 @@
+{
+ "suite": "fallback",
+ "rows": 360,
+ "planned": 360,
+ "seeds": [
+  8001,
+  8030,
+  30
+ ],
+ "commits": [
+  "f6e4648"
+ ],
+ "routers": 3,
+ "failures": []
+}

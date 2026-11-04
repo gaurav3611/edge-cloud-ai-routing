@@ -1,0 +1,15 @@
+{
+ "suite": "scale",
+ "rows": 1600,
+ "planned": 1600,
+ "seeds": [
+  6001,
+  6020,
+  20
+ ],
+ "commits": [
+  "f6e4648"
+ ],
+ "routers": 5,
+ "failures": []
+}

@@ -1,0 +1,15 @@
+{
+ "suite": "gamma",
+ "rows": 600,
+ "planned": 600,
+ "seeds": [
+  1101,
+  1160,
+  60
+ ],
+ "commits": [
+  "95aa9f7"
+ ],
+ "routers": 5,
+ "failures": []
+}

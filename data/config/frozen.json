@@ -1,0 +1,23 @@
+{
+ "carried": {
+  "large+adm_big.1": {"large_jsq": true, "adm_big": 0.1},
+  "adm_big.3": {"adm_big": 0.3},
+  "large8": {"large_jsq": "8"},
+  "frag": {"frag": true},
+  "trunk.1": {"trunk": 0.1},
+  "trunk.25h": {"trunk": 0.25, "trunk_hard": true},
+  "local_bf": {"local_bf": true}
+ },
+ "carried_rjsq": {"rand-JSQ e0.05": 0.05},
+ "shortlist": {
+  "large+adm_big.1": {"large_jsq": true, "adm_big": 0.1},
+  "adm_big.3": {"adm_big": 0.3},
+  "large8": {"large_jsq": "8"},
+  "frag": {"frag": true},
+  "trunk.1": {"trunk": 0.1},
+  "trunk.25h": {"trunk": 0.25, "trunk_hard": true},
+  "local_bf": {"local_bf": true}
+ },
+ "gamma": 0.3,
+ "qstar": 0.3
+}

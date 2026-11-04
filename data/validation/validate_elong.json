@@ -1,0 +1,15 @@
+{
+ "suite": "elong",
+ "rows": 504,
+ "planned": 504,
+ "seeds": [
+  7001,
+  7012,
+  12
+ ],
+ "commits": [
+  "f6e4648"
+ ],
+ "routers": 7,
+ "failures": []
+}

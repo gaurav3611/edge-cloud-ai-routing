@@ -1,0 +1,15 @@
+{
+ "suite": "crypto",
+ "rows": 2520,
+ "planned": 2520,
+ "seeds": [
+  5001,
+  5020,
+  20
+ ],
+ "commits": [
+  "f6e4648"
+ ],
+ "routers": 3,
+ "failures": []
+}

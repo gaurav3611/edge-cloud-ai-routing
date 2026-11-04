@@ -1,0 +1,7 @@
+{
+ "suite": "val2",
+ "rows": 4,
+ "equal": true,
+ "differing_fields": [],
+ "sim_sha256": "01f9cfe62954d887a6a3a73f0d535c40af2b2ea4c4d4a9335124a0c8fe4b5676"
+}

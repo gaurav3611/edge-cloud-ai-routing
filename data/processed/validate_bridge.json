@@ -1,0 +1,15 @@
+{
+ "suite": "bridge",
+ "rows": 1800,
+ "planned": 1800,
+ "seeds": [
+  4001,
+  4030,
+  30
+ ],
+ "commits": [
+  "d86d8d0"
+ ],
+ "routers": 15,
+ "failures": []
+}

@@ -1,0 +1,15 @@
+{
+ "suite": "topovar",
+ "rows": 100,
+ "planned": 100,
+ "seeds": [
+  5001,
+  5010,
+  10
+ ],
+ "commits": [
+  "f6e4648"
+ ],
+ "routers": 2,
+ "failures": []
+}

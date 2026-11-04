@@ -1,0 +1,15 @@
+{
+ "suite": "tune",
+ "rows": 2480,
+ "planned": 2480,
+ "seeds": [
+  1001,
+  1020,
+  20
+ ],
+ "commits": [
+  "95aa9f7"
+ ],
+ "routers": 31,
+ "failures": []
+}

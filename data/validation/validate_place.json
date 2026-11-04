@@ -1,0 +1,15 @@
+{
+ "suite": "place",
+ "rows": 960,
+ "planned": 960,
+ "seeds": [
+  5001,
+  5020,
+  20
+ ],
+ "commits": [
+  "f6e4648"
+ ],
+ "routers": 4,
+ "failures": []
+}

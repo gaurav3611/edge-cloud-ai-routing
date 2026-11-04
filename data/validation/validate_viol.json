@@ -1,0 +1,15 @@
+{
+ "suite": "viol",
+ "rows": 750,
+ "planned": 750,
+ "seeds": [
+  8001,
+  8030,
+  30
+ ],
+ "commits": [
+  "f6e4648"
+ ],
+ "routers": 5,
+ "failures": []
+}

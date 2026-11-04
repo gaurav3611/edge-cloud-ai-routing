@@ -1,0 +1,15 @@
+{
+ "suite": "val2",
+ "rows": 1200,
+ "planned": 1200,
+ "seeds": [
+  3101,
+  3130,
+  30
+ ],
+ "commits": [
+  "bf889f4"
+ ],
+ "routers": 10,
+ "failures": []
+}
